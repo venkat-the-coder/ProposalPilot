@@ -1,5 +1,10 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProposalPilot.Application.Features.Users.Commands.ChangePassword;
+using ProposalPilot.Application.Features.Users.Commands.UpdateProfile;
+using ProposalPilot.Application.Features.Users.Commands.UpdateProfileImage;
+using ProposalPilot.Application.Features.Users.Queries.GetUserProfile;
 using ProposalPilot.Application.Interfaces;
 using ProposalPilot.Shared.DTOs.User;
 
@@ -10,16 +15,16 @@ namespace ProposalPilot.API.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly IUserService _userService;
+    private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<UsersController> _logger;
 
     public UsersController(
-        IUserService userService,
+        IMediator mediator,
         ICurrentUserService currentUserService,
         ILogger<UsersController> logger)
     {
-        _userService = userService;
+        _mediator = mediator;
         _currentUserService = currentUserService;
         _logger = logger;
     }
@@ -41,7 +46,8 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var profile = await _userService.GetUserProfileAsync(_currentUserService.UserId.Value);
+            var query = new GetUserProfileQuery(_currentUserService.UserId.Value);
+            var profile = await _mediator.Send(query);
 
             if (profile == null)
             {
@@ -77,9 +83,16 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var updatedProfile = await _userService.UpdateProfileAsync(
+            var command = new UpdateProfileCommand(
                 _currentUserService.UserId.Value,
-                request);
+                request.FirstName,
+                request.LastName,
+                request.CompanyName,
+                request.JobTitle,
+                request.PhoneNumber
+            );
+
+            var updatedProfile = await _mediator.Send(command);
 
             if (updatedProfile == null)
             {
@@ -114,10 +127,13 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var success = await _userService.ChangePasswordAsync(
+            var command = new ChangePasswordCommand(
                 _currentUserService.UserId.Value,
                 request.CurrentPassword,
-                request.NewPassword);
+                request.NewPassword
+            );
+
+            var success = await _mediator.Send(command);
 
             if (!success)
             {
@@ -152,9 +168,12 @@ public class UsersController : ControllerBase
                 return Unauthorized(new { message = "User not authenticated" });
             }
 
-            var success = await _userService.UpdateProfileImageAsync(
+            var command = new UpdateProfileImageCommand(
                 _currentUserService.UserId.Value,
-                request.ImageUrl);
+                request.ImageUrl
+            );
+
+            var success = await _mediator.Send(command);
 
             if (!success)
             {

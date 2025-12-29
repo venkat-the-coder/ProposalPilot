@@ -43,6 +43,13 @@ try
         options.InstanceName = "ProposalPilot_";
     });
 
+    // MediatR
+    builder.Services.AddMediatR(cfg =>
+    {
+        cfg.RegisterServicesFromAssembly(typeof(ProposalPilot.Application.Features.Users.Queries.GetUserProfile.GetUserProfileQuery).Assembly);
+        cfg.RegisterServicesFromAssembly(typeof(ProposalPilot.Infrastructure.Data.ApplicationDbContext).Assembly);
+    });
+
     // Application Services
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IAuthService, ProposalPilot.Infrastructure.Services.AuthService>();
