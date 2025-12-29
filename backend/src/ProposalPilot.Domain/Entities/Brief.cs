@@ -1,5 +1,7 @@
 namespace ProposalPilot.Domain.Entities;
 
+using ProposalPilot.Domain.Enums;
+
 public class Brief : BaseEntity
 {
     public Guid UserId { get; set; }
@@ -28,12 +30,4 @@ public class Brief : BaseEntity
 
     // Navigation properties
     public ICollection<Proposal> Proposals { get; set; } = new List<Proposal>();
-}
-
-public enum BriefStatus
-{
-    Draft = 0,
-    Analyzing = 1,
-    Analyzed = 2,
-    Failed = 3
 }

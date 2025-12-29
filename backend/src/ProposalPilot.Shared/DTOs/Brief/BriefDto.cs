@@ -28,13 +28,62 @@ public record AnalyzeBriefRequest(
     Guid BriefId
 );
 
+// Comprehensive Brief Analysis Result from Claude API
 public record BriefAnalysisResult(
-    string ProjectType,
+    ProjectOverview ProjectOverview,
+    Requirements Requirements,
+    ClientInsights ClientInsights,
+    ProjectSignals ProjectSignals,
+    RiskAssessment RiskAssessment,
+    RecommendedApproach RecommendedApproach
+);
+
+public record ProjectOverview(
+    string Type,
     string Industry,
-    decimal? EstimatedBudget,
-    string Timeline,
-    List<string> KeyRequirements,
-    List<string> TechnicalRequirements,
-    string TargetAudience,
-    string Summary
+    string Complexity,
+    int ConfidenceScore
+);
+
+public record Requirements(
+    List<string> Explicit,
+    List<string> Implicit,
+    List<string> Technical,
+    List<string> Deliverables
+);
+
+public record ClientInsights(
+    List<string> PainPoints,
+    List<string> SuccessCriteria,
+    List<string> DecisionFactors
+);
+
+public record ProjectSignals(
+    TimelineInfo Timeline,
+    BudgetInfo Budget
+);
+
+public record TimelineInfo(
+    string Urgency,
+    string DurationEstimate,
+    List<string> KeyDates
+);
+
+public record BudgetInfo(
+    List<string> Signals,
+    string RangeEstimate,
+    string PricingSensitivity
+);
+
+public record RiskAssessment(
+    List<string> RedFlags,
+    List<string> ClarificationNeeded,
+    List<string> ScopeCreepRisks
+);
+
+public record RecommendedApproach(
+    string ProposalTone,
+    List<string> KeyThemes,
+    List<string> Differentiators,
+    string PricingStrategy
 );

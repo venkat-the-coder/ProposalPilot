@@ -59,6 +59,9 @@ try
     // Cache Service
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICacheService, ProposalPilot.Infrastructure.Services.RedisCacheService>();
 
+    // Brief Analyzer Service
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IBriefAnalyzerService, ProposalPilot.Infrastructure.Services.BriefAnalyzerService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));
