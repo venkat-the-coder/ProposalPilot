@@ -40,6 +40,29 @@ import { QualityScoreSidebarComponent } from './quality-score-sidebar.component'
             <div class="flex items-center justify-between mb-4">
               <h1 class="text-3xl font-bold text-gray-900">Edit Proposal</h1>
               <div class="flex gap-3">
+                <!-- Export Buttons -->
+                <div class="flex gap-2 mr-2 border-r pr-3">
+                  <button
+                    (click)="exportPdf()"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
+                    title="Export as PDF"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    PDF
+                  </button>
+                  <button
+                    (click)="exportDocx()"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
+                    title="Export as DOCX"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    DOCX
+                  </button>
+                </div>
                 <button
                   [routerLink]="['/proposals', proposal.id]"
                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
@@ -246,5 +269,15 @@ export class ProposalEditorComponent implements OnInit {
         alert(this.error);
       }
     });
+  }
+
+  exportPdf(): void {
+    if (!this.proposal) return;
+    this.proposalService.exportPdf(this.proposal.id);
+  }
+
+  exportDocx(): void {
+    if (!this.proposal) return;
+    this.proposalService.exportDocx(this.proposal.id);
   }
 }

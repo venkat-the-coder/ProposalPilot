@@ -68,6 +68,10 @@ try
     // Quality Scorer Service
     builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IQualityScorerService, ProposalPilot.Infrastructure.Services.QualityScorerService>();
 
+    // Export Services
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IPdfExportService, ProposalPilot.Infrastructure.Services.PdfExportService>();
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IDocxExportService, ProposalPilot.Infrastructure.Services.DocxExportService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));

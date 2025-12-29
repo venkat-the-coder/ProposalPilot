@@ -47,4 +47,12 @@ export class ProposalService {
   scoreProposal(id: string): Observable<QualityScoreResult> {
     return this.http.post<QualityScoreResult>(`${this.API_URL}/${id}/score`, {});
   }
+
+  exportPdf(id: string): void {
+    window.open(`${this.API_URL}/${id}/export/pdf`, '_blank');
+  }
+
+  exportDocx(id: string): void {
+    window.open(`${this.API_URL}/${id}/export/docx`, '_blank');
+  }
 }

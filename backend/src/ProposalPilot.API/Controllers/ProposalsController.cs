@@ -17,15 +17,21 @@ public class ProposalsController : ControllerBase
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUserService;
     private readonly ApplicationDbContext _context;
+    private readonly ProposalPilot.Infrastructure.Services.IPdfExportService _pdfExportService;
+    private readonly ProposalPilot.Infrastructure.Services.IDocxExportService _docxExportService;
 
     public ProposalsController(
         IMediator mediator,
         ICurrentUserService currentUserService,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        ProposalPilot.Infrastructure.Services.IPdfExportService pdfExportService,
+        ProposalPilot.Infrastructure.Services.IDocxExportService docxExportService)
     {
         _mediator = mediator;
         _currentUserService = currentUserService;
         _context = context;
+        _pdfExportService = pdfExportService;
+        _docxExportService = docxExportService;
     }
 
     /// <summary>
@@ -252,6 +258,64 @@ public class ProposalsController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, new { message = "Error scoring proposal", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Export proposal as PDF
+    /// </summary>
+    [HttpGet("{id}/export/pdf")]
+    public async Task<ActionResult> ExportPdf(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        try
+        {
+            var proposal = await _context.Proposals
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+            if (proposal == null)
+                return NotFound();
+
+            var pdfBytes = _pdfExportService.GenerateProposalPdf(proposal);
+
+            var fileName = $"{proposal.Title.Replace(" ", "_")}_{DateTime.UtcNow:yyyyMMdd}.pdf";
+
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error exporting PDF", error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Export proposal as DOCX
+    /// </summary>
+    [HttpGet("{id}/export/docx")]
+    public async Task<ActionResult> ExportDocx(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        try
+        {
+            var proposal = await _context.Proposals
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+            if (proposal == null)
+                return NotFound();
+
+            var docxBytes = _docxExportService.GenerateProposalDocx(proposal);
+
+            var fileName = $"{proposal.Title.Replace(" ", "_")}_{DateTime.UtcNow:yyyyMMdd}.docx";
+
+            return File(docxBytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error exporting DOCX", error = ex.Message });
         }
     }
 }
