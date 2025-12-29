@@ -5,6 +5,7 @@ using ProposalPilot.Shared.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ProposalPilot.Infrastructure.Middleware;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -71,6 +72,9 @@ try
     // Export Services
     builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IPdfExportService, ProposalPilot.Infrastructure.Services.PdfExportService>();
     builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IDocxExportService, ProposalPilot.Infrastructure.Services.DocxExportService>();
+
+    // Stripe Service
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IStripeService, ProposalPilot.Infrastructure.Services.StripeService>();
 
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
@@ -146,6 +150,9 @@ try
 
     app.UseAuthentication();
     app.UseAuthorization();
+
+    // Subscription enforcement middleware (checks proposal limits)
+    app.UseSubscriptionEnforcement();
 
     app.MapControllers();
     app.MapHealthChecks("/health");
