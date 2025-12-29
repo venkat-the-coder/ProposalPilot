@@ -16,11 +16,16 @@ public class BriefsController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ILogger<BriefsController> _logger;
 
-    public BriefsController(IMediator mediator, ICurrentUserService currentUserService)
+    public BriefsController(
+        IMediator mediator,
+        ICurrentUserService currentUserService,
+        ILogger<BriefsController> logger)
     {
         _mediator = mediator;
         _currentUserService = currentUserService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -82,7 +87,8 @@ public class BriefsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error analyzing brief", error = ex.Message });
+            _logger.LogError(ex, "Error analyzing brief {BriefId} for user {UserId}", id, _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while analyzing the brief" });
         }
     }
 }

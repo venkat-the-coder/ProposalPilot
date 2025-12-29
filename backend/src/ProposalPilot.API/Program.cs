@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ProposalPilot.Infrastructure.Middleware;
+using AspNetCoreRateLimit;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -129,6 +132,19 @@ try
         .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "database")
         .AddRedis(builder.Configuration.GetConnectionString("Redis")!, name: "redis");
 
+    // Rate Limiting
+    builder.Services.AddMemoryCache();
+    builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+    builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+    builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+    builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+    builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+    builder.Services.AddInMemoryRateLimiting();
+
+    // FluentValidation
+    builder.Services.AddValidatorsFromAssemblyContaining<ProposalPilot.Application.Validators.RegisterRequestValidator>();
+    builder.Services.AddFluentValidationAutoValidation();
+
     var app = builder.Build();
 
     // Middleware Pipeline
@@ -143,6 +159,12 @@ try
     }
 
     app.UseSerilogRequestLogging();
+
+    // Security headers (add security headers to all responses)
+    app.UseSecurityHeaders();
+
+    // Rate limiting (before other middleware to protect all endpoints)
+    app.UseIpRateLimiting();
 
     app.UseHttpsRedirection();
 

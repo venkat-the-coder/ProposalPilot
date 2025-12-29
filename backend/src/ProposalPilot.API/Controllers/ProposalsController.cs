@@ -19,19 +19,22 @@ public class ProposalsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ProposalPilot.Infrastructure.Services.IPdfExportService _pdfExportService;
     private readonly ProposalPilot.Infrastructure.Services.IDocxExportService _docxExportService;
+    private readonly ILogger<ProposalsController> _logger;
 
     public ProposalsController(
         IMediator mediator,
         ICurrentUserService currentUserService,
         ApplicationDbContext context,
         ProposalPilot.Infrastructure.Services.IPdfExportService pdfExportService,
-        ProposalPilot.Infrastructure.Services.IDocxExportService docxExportService)
+        ProposalPilot.Infrastructure.Services.IDocxExportService docxExportService,
+        ILogger<ProposalsController> logger)
     {
         _mediator = mediator;
         _currentUserService = currentUserService;
         _context = context;
         _pdfExportService = pdfExportService;
         _docxExportService = docxExportService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -63,7 +66,8 @@ public class ProposalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error generating proposal", error = ex.Message });
+            _logger.LogError(ex, "Error generating proposal for user {UserId}", _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while generating the proposal" });
         }
     }
 
@@ -124,22 +128,75 @@ public class ProposalsController : ControllerBase
     }
 
     /// <summary>
-    /// Get all proposals for the current user
+    /// Get all proposals for the current user with pagination
     /// </summary>
     [HttpGet]
-    public async Task<ActionResult> GetProposals()
+    public async Task<ActionResult> GetProposals(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? status = null,
+        [FromQuery] string? sortBy = "createdAt",
+        [FromQuery] bool sortDescending = true)
     {
         if (!_currentUserService.UserId.HasValue)
             return Unauthorized();
 
-        var proposals = await _context.Proposals
+        // Validate pagination parameters
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 1;
+        if (pageSize > 100) pageSize = 100; // Max page size limit
+
+        var query = _context.Proposals
             .Include(p => p.Client)
             .Include(p => p.Brief)
-            .Where(p => p.UserId == _currentUserService.UserId.Value)
-            .OrderByDescending(p => p.CreatedAt)
+            .Where(p => p.UserId == _currentUserService.UserId.Value);
+
+        // Apply status filter if provided
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<ProposalPilot.Domain.Enums.ProposalStatus>(status, true, out var statusEnum))
+        {
+            query = query.Where(p => p.Status == statusEnum);
+        }
+
+        // Apply sorting
+        query = sortBy?.ToLowerInvariant() switch
+        {
+            "title" => sortDescending
+                ? query.OrderByDescending(p => p.Title)
+                : query.OrderBy(p => p.Title),
+            "status" => sortDescending
+                ? query.OrderByDescending(p => p.Status)
+                : query.OrderBy(p => p.Status),
+            "viewcount" => sortDescending
+                ? query.OrderByDescending(p => p.ViewCount)
+                : query.OrderBy(p => p.ViewCount),
+            _ => sortDescending
+                ? query.OrderByDescending(p => p.CreatedAt)
+                : query.OrderBy(p => p.CreatedAt)
+        };
+
+        // Get total count for pagination metadata
+        var totalCount = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        // Apply pagination
+        var proposals = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return Ok(proposals);
+        return Ok(new
+        {
+            data = proposals,
+            pagination = new
+            {
+                currentPage = page,
+                pageSize,
+                totalCount,
+                totalPages,
+                hasNextPage = page < totalPages,
+                hasPreviousPage = page > 1
+            }
+        });
     }
 
     /// <summary>
@@ -170,7 +227,8 @@ public class ProposalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error updating proposal", error = ex.Message });
+            _logger.LogError(ex, "Error updating proposal {ProposalId} for user {UserId}", id, _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while updating the proposal" });
         }
     }
 
@@ -257,7 +315,8 @@ public class ProposalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error scoring proposal", error = ex.Message });
+            _logger.LogError(ex, "Error scoring proposal {ProposalId} for user {UserId}", id, _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while scoring the proposal" });
         }
     }
 
@@ -286,7 +345,8 @@ public class ProposalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error exporting PDF", error = ex.Message });
+            _logger.LogError(ex, "Error exporting PDF for proposal {ProposalId}", id);
+            return StatusCode(500, new { message = "An unexpected error occurred while exporting the PDF" });
         }
     }
 
@@ -315,7 +375,8 @@ public class ProposalsController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error exporting DOCX", error = ex.Message });
+            _logger.LogError(ex, "Error exporting DOCX for proposal {ProposalId}", id);
+            return StatusCode(500, new { message = "An unexpected error occurred while exporting the document" });
         }
     }
 }

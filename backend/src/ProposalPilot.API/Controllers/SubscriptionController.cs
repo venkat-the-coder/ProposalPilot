@@ -17,17 +17,20 @@ public class SubscriptionController : ControllerBase
     private readonly ICurrentUserService _currentUserService;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<SubscriptionController> _logger;
 
     public SubscriptionController(
         IStripeService stripeService,
         ICurrentUserService currentUserService,
         ApplicationDbContext context,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILogger<SubscriptionController> logger)
     {
         _stripeService = stripeService;
         _currentUserService = currentUserService;
         _context = context;
         _configuration = configuration;
+        _logger = logger;
     }
 
     /// <summary>
@@ -75,7 +78,8 @@ public class SubscriptionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error creating checkout session", error = ex.Message });
+            _logger.LogError(ex, "Error creating checkout session for user {UserId}", _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while creating checkout session" });
         }
     }
 
@@ -114,7 +118,8 @@ public class SubscriptionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error creating portal session", error = ex.Message });
+            _logger.LogError(ex, "Error creating portal session for user {UserId}", _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while creating portal session" });
         }
     }
 
@@ -170,7 +175,8 @@ public class SubscriptionController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "Error fetching subscription status", error = ex.Message });
+            _logger.LogError(ex, "Error fetching subscription status for user {UserId}", _currentUserService.UserId);
+            return StatusCode(500, new { message = "An unexpected error occurred while fetching subscription status" });
         }
     }
 }
