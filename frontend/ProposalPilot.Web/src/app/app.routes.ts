@@ -46,5 +46,15 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'proposals',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: ':id',
+        loadComponent: () => import('./features/proposals/components/proposal-view.component').then(m => m.ProposalViewComponent)
+      }
+    ]
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];
