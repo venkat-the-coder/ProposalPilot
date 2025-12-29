@@ -43,6 +43,11 @@ try
         options.InstanceName = "ProposalPilot_";
     });
 
+    // Application Services
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IAuthService, ProposalPilot.Infrastructure.Services.AuthService>();
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICurrentUserService, ProposalPilot.Infrastructure.Services.CurrentUserService>();
+
     // Authentication
     builder.Services.AddAuthentication(options =>
     {
