@@ -1,0 +1,334 @@
+<div class="space-y-6">
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="flex items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span class="ml-3 text-gray-600">Loading engagement data...</span>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <p class="text-red-700">{{ error() }}</p>
+      <button (click)="loadData()" class="mt-2 text-red-600 hover:text-red-800 underline">
+        Try again
+      </button>
+    </div>
+  }
+
+  <!-- Engagement Metrics -->
+  @if (metrics(); as m) {
+    <!-- Engagement Score Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Engagement Score</h3>
+      </div>
+      <div class="p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <!-- Score Circle -->
+            <div class="relative w-24 h-24">
+              <svg class="w-24 h-24 transform -rotate-90">
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  fill="none"
+                  class="text-gray-200"
+                />
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="40"
+                  stroke="currentColor"
+                  stroke-width="8"
+                  fill="none"
+                  [class]="m.engagementLevel === 'Hot' ? 'text-red-500' : m.engagementLevel === 'Warm' ? 'text-orange-500' : m.engagementLevel === 'Cold' ? 'text-blue-500' : 'text-gray-400'"
+                  [style.strokeDasharray]="251.2"
+                  [style.strokeDashoffset]="251.2 - (251.2 * m.engagementScore / 100)"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-2xl font-bold text-gray-900">{{ m.engagementScore }}</span>
+              </div>
+            </div>
+
+            <!-- Level Badge -->
+            <div>
+              <span [class]="'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ' + engagementLevelClass()">
+                {{ m.engagementLevel }}
+              </span>
+              <p class="mt-2 text-sm text-gray-600">
+                @if (m.engagementLevel === 'Hot') {
+                  Highly engaged - likely to convert
+                } @else if (m.engagementLevel === 'Warm') {
+                  Showing interest - follow up recommended
+                } @else if (m.engagementLevel === 'Cold') {
+                  Low engagement - needs attention
+                } @else {
+                  No engagement yet
+                }
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center">
+              <p class="text-2xl font-semibold text-gray-900">{{ m.totalViews }}</p>
+              <p class="text-sm text-gray-500">Total Views</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-semibold text-gray-900">{{ m.emailOpens }}</p>
+              <p class="text-sm text-gray-500">Email Opens</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-semibold text-gray-900">{{ m.emailClicks }}</p>
+              <p class="text-sm text-gray-500">Link Clicks</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-semibold text-gray-900">{{ m.daysSinceSent }}</p>
+              <p class="text-sm text-gray-500">Days Sent</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">Activity Timeline</h4>
+          <div class="flex items-center gap-6 text-sm">
+            @if (m.firstViewedAt) {
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                <span class="text-gray-600">First viewed: {{ m.firstViewedAt | date:'MMM d, y h:mm a' }}</span>
+              </div>
+            }
+            @if (m.lastViewedAt) {
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                <span class="text-gray-600">Last viewed: {{ m.lastViewedAt | date:'MMM d, y h:mm a' }}</span>
+              </div>
+            }
+            @if (m.timeSinceLastActivity) {
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                <span class="text-gray-600">Last activity: {{ formatDuration(m.timeSinceLastActivity) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email History -->
+    @if (m.emailHistory.length > 0) {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900">Email History</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opens</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clicks</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @for (email of m.emailHistory; track email.emailLogId) {
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ email.emailType }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(email.status)">
+                      {{ email.status }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ email.sentAt | date:'MMM d, y h:mm a' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ email.openCount }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ email.clickCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- Follow-up Recommendation -->
+  @if (recommendation(); as rec) {
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900">Follow-up</h3>
+        @if (rec.shouldFollowUp) {
+          <button
+            (click)="openScheduleModal()"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Schedule Follow-up
+          </button>
+        }
+      </div>
+      <div class="p-6">
+        <div class="flex items-start gap-4">
+          <div [class]="'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ' + (rec.shouldFollowUp ? 'bg-green-100' : 'bg-gray-100')">
+            @if (rec.shouldFollowUp) {
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            } @else {
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            }
+          </div>
+          <div class="flex-1">
+            <p class="text-gray-900 font-medium">{{ rec.reason }}</p>
+            @if (rec.shouldFollowUp && rec.suggestedMessage) {
+              <div class="mt-3 p-3 bg-gray-50 rounded-lg">
+                <p class="text-sm text-gray-600 italic">"{{ rec.suggestedMessage }}"</p>
+                <p class="mt-2 text-xs text-gray-500">Suggested tone: {{ rec.suggestedTone }}</p>
+              </div>
+            }
+            @if (rec.recommendedDelayDays > 0) {
+              <p class="mt-2 text-sm text-gray-500">
+                Recommended to wait {{ rec.recommendedDelayDays }} more day(s)
+              </p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Scheduled Follow-ups -->
+  @if (followUps().length > 0) {
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Scheduled Follow-ups</h3>
+      </div>
+      <div class="divide-y divide-gray-200">
+        @for (followUp of followUps(); track followUp.id) {
+          <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="flex-shrink-0">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 font-medium text-sm">
+                  #{{ followUp.sequenceNumber }}
+                </span>
+              </div>
+              <div>
+                <p class="text-gray-900 font-medium">{{ followUp.subject }}</p>
+                <p class="text-sm text-gray-500">
+                  @if (followUp.sentAt) {
+                    Sent: {{ followUp.sentAt | date:'MMM d, y h:mm a' }}
+                  } @else {
+                    Scheduled: {{ followUp.scheduledFor | date:'MMM d, y h:mm a' }}
+                  }
+                </p>
+                <p class="text-xs text-gray-400 mt-1">{{ followUp.triggerReason }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span [class]="'px-2 py-1 text-xs font-medium rounded-full ' + getStatusClass(followUp.status)">
+                {{ followUp.status }}
+              </span>
+              @if (followUp.canCancel) {
+                <button
+                  (click)="cancelFollowUp(followUp.id)"
+                  class="text-red-600 hover:text-red-800 text-sm"
+                >
+                  Cancel
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Schedule Follow-up Modal -->
+@if (showScheduleModal()) {
+  <div class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+      <!-- Backdrop -->
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closeScheduleModal()"></div>
+
+      <!-- Modal -->
+      <div class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Schedule Follow-up</h3>
+
+          <div class="space-y-4">
+            <!-- Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input
+                type="date"
+                [value]="scheduledDate()"
+                (input)="scheduledDate.set($any($event.target).value)"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <!-- Time -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Time (UTC)</label>
+              <input
+                type="time"
+                [value]="scheduledTime()"
+                (input)="scheduledTime.set($any($event.target).value)"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            <!-- Custom Message -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+              <textarea
+                [value]="customMessage()"
+                (input)="customMessage.set($any($event.target).value)"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Leave blank to use the suggested message"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
+          <button
+            (click)="scheduleFollowUp()"
+            [disabled]="scheduling()"
+            class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          >
+            @if (scheduling()) {
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              Scheduling...
+            } @else {
+              Schedule
+            }
+          </button>
+          <button
+            (click)="closeScheduleModal()"
+            type="button"
+            class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 bg-white text-gray-700 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

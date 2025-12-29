@@ -53,4 +53,6 @@ public class Proposal : BaseEntity
     // Navigation properties
     public ICollection<ProposalSection> Sections { get; set; } = new List<ProposalSection>();
     public ICollection<ProposalAnalytics> Analytics { get; set; } = new List<ProposalAnalytics>();
+    public ICollection<EmailLog> EmailLogs { get; set; } = new List<EmailLog>();
+    public ICollection<FollowUp> FollowUps { get; set; } = new List<FollowUp>();
 }

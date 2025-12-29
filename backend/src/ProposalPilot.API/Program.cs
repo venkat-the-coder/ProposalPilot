@@ -9,6 +9,8 @@ using ProposalPilot.Infrastructure.Middleware;
 using AspNetCoreRateLimit;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
+using ProposalPilot.API.Filters;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -82,6 +84,9 @@ try
     // Email Service
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IEmailService, ProposalPilot.Infrastructure.Services.SendGridEmailService>();
 
+    // Engagement Service
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IEngagementService, ProposalPilot.Infrastructure.Services.EngagementService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));
@@ -148,6 +153,17 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<ProposalPilot.Application.Validators.RegisterRequestValidator>();
     builder.Services.AddFluentValidationAutoValidation();
 
+    // Hangfire for background jobs
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+    builder.Services.AddHangfireServer();
+
+    // Follow-up Service
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IFollowUpService, ProposalPilot.Infrastructure.Services.FollowUpService>();
+
     var app = builder.Build();
 
     // Middleware Pipeline
@@ -181,6 +197,22 @@ try
 
     app.MapControllers();
     app.MapHealthChecks("/health");
+
+    // Hangfire Dashboard (requires authorization in production)
+    app.MapHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = app.Environment.IsDevelopment()
+            ? new[] { new Hangfire.Dashboard.LocalRequestsOnlyAuthorizationFilter() }
+            : new[] { new HangfireAuthorizationFilter() }
+    });
+
+    // Register recurring jobs
+    RecurringJob.AddOrUpdate<ProposalPilot.Infrastructure.Services.IFollowUpService>(
+        "process-automatic-followups",
+        service => service.ProcessAutomaticFollowUpsAsync(),
+        Cron.Daily(9)); // Run daily at 9 AM UTC
+
+    Log.Information("Hangfire recurring jobs configured");
 
     // Database migration on startup (only in development)
     if (app.Environment.IsDevelopment())

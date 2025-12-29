@@ -20,6 +20,7 @@ public class ProposalsController : ControllerBase
     private readonly ProposalPilot.Infrastructure.Services.IPdfExportService _pdfExportService;
     private readonly ProposalPilot.Infrastructure.Services.IDocxExportService _docxExportService;
     private readonly IEmailService _emailService;
+    private readonly ProposalPilot.Infrastructure.Services.IEngagementService _engagementService;
     private readonly ILogger<ProposalsController> _logger;
 
     public ProposalsController(
@@ -29,6 +30,7 @@ public class ProposalsController : ControllerBase
         ProposalPilot.Infrastructure.Services.IPdfExportService pdfExportService,
         ProposalPilot.Infrastructure.Services.IDocxExportService docxExportService,
         IEmailService emailService,
+        ProposalPilot.Infrastructure.Services.IEngagementService engagementService,
         ILogger<ProposalsController> logger)
     {
         _mediator = mediator;
@@ -37,6 +39,7 @@ public class ProposalsController : ControllerBase
         _pdfExportService = pdfExportService;
         _docxExportService = docxExportService;
         _emailService = emailService;
+        _engagementService = engagementService;
         _logger = logger;
     }
 
@@ -293,6 +296,60 @@ public class ProposalsController : ControllerBase
     }
 
     /// <summary>
+    /// Get engagement metrics for a proposal
+    /// </summary>
+    [HttpGet("{id}/engagement")]
+    public async Task<ActionResult> GetEngagementMetrics(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        var proposal = await _context.Proposals
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+        if (proposal == null)
+            return NotFound();
+
+        try
+        {
+            var metrics = await _engagementService.GetEngagementMetricsAsync(id);
+            return Ok(metrics);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting engagement metrics for proposal {ProposalId}", id);
+            return StatusCode(500, new { message = "An error occurred while getting engagement metrics" });
+        }
+    }
+
+    /// <summary>
+    /// Get follow-up recommendation for a proposal
+    /// </summary>
+    [HttpGet("{id}/followup-recommendation")]
+    public async Task<ActionResult> GetFollowUpRecommendation(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        var proposal = await _context.Proposals
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+        if (proposal == null)
+            return NotFound();
+
+        try
+        {
+            var recommendation = await _engagementService.GetFollowUpRecommendationAsync(id);
+            return Ok(recommendation);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting follow-up recommendation for proposal {ProposalId}", id);
+            return StatusCode(500, new { message = "An error occurred while getting follow-up recommendation" });
+        }
+    }
+
+    /// <summary>
     /// Score proposal quality with AI
     /// </summary>
     [HttpPost("{id}/score")]
@@ -417,6 +474,7 @@ public class ProposalsController : ControllerBase
 
             // Prepare the email request
             var emailRequest = new Application.Interfaces.SendProposalEmailRequest(
+                ProposalId: proposal.Id,
                 RecipientEmail: request.RecipientEmail,
                 RecipientName: request.RecipientName,
                 SenderName: $"{proposal.User.FirstName} {proposal.User.LastName}",

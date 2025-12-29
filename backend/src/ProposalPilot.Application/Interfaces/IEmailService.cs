@@ -25,6 +25,7 @@ public interface IEmailService
 /// Request to send a proposal email
 /// </summary>
 public record SendProposalEmailRequest(
+    Guid ProposalId,
     string RecipientEmail,
     string RecipientName,
     string SenderName,
@@ -39,6 +40,8 @@ public record SendProposalEmailRequest(
 /// Request to send a follow-up email
 /// </summary>
 public record SendFollowUpEmailRequest(
+    Guid ProposalId,
+    Guid? FollowUpId,
     string RecipientEmail,
     string RecipientName,
     string SenderName,

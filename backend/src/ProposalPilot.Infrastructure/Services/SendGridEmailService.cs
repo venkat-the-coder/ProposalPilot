@@ -3,6 +3,9 @@ using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using ProposalPilot.Application.Interfaces;
+using ProposalPilot.Domain.Entities;
+using ProposalPilot.Domain.Enums;
+using ProposalPilot.Infrastructure.Data;
 using ProposalPilot.Shared.Configuration;
 
 namespace ProposalPilot.Infrastructure.Services;
@@ -15,14 +18,17 @@ public class SendGridEmailService : IEmailService
     private readonly SendGridSettings _settings;
     private readonly ILogger<SendGridEmailService> _logger;
     private readonly ISendGridClient _client;
+    private readonly ApplicationDbContext _context;
 
     public SendGridEmailService(
         IOptions<SendGridSettings> settings,
-        ILogger<SendGridEmailService> logger)
+        ILogger<SendGridEmailService> logger,
+        ApplicationDbContext context)
     {
         _settings = settings.Value;
         _logger = logger;
         _client = new SendGridClient(_settings.ApiKey);
+        _context = context;
     }
 
     public async Task<EmailResult> SendProposalAsync(SendProposalEmailRequest request)
@@ -30,19 +36,41 @@ public class SendGridEmailService : IEmailService
         _logger.LogInformation("Sending proposal email to {Email} for proposal: {Title}",
             request.RecipientEmail, request.ProposalTitle);
 
+        var subject = $"Proposal: {request.ProposalTitle}";
         var htmlContent = GenerateProposalEmailHtml(request);
         var plainTextContent = GenerateProposalEmailPlainText(request);
 
         var emailRequest = new EmailRequest(
             To: request.RecipientEmail,
             ToName: request.RecipientName,
-            Subject: $"Proposal: {request.ProposalTitle}",
+            Subject: subject,
             HtmlContent: htmlContent,
             PlainTextContent: plainTextContent,
             ReplyTo: request.SenderEmail
         );
 
-        return await SendEmailAsync(emailRequest);
+        var result = await SendEmailInternalAsync(emailRequest);
+
+        // Create EmailLog record
+        if (result.Success)
+        {
+            var emailLog = new EmailLog
+            {
+                ProposalId = request.ProposalId,
+                RecipientEmail = request.RecipientEmail,
+                RecipientName = request.RecipientName,
+                Subject = subject,
+                EmailType = EmailType.Proposal,
+                Status = EmailStatus.Sent,
+                SendGridMessageId = result.MessageId,
+                SentAt = DateTime.UtcNow
+            };
+
+            _context.EmailLogs.Add(emailLog);
+            await _context.SaveChangesAsync();
+        }
+
+        return result;
     }
 
     public async Task<EmailResult> SendFollowUpAsync(SendFollowUpEmailRequest request)
@@ -69,10 +97,49 @@ public class SendGridEmailService : IEmailService
             ReplyTo: request.SenderEmail
         );
 
-        return await SendEmailAsync(emailRequest);
+        var result = await SendEmailInternalAsync(emailRequest);
+
+        // Create EmailLog record
+        if (result.Success)
+        {
+            var emailLog = new EmailLog
+            {
+                ProposalId = request.ProposalId,
+                RecipientEmail = request.RecipientEmail,
+                RecipientName = request.RecipientName,
+                Subject = subject,
+                EmailType = EmailType.FollowUp,
+                Status = EmailStatus.Sent,
+                SendGridMessageId = result.MessageId,
+                SentAt = DateTime.UtcNow
+            };
+
+            _context.EmailLogs.Add(emailLog);
+            await _context.SaveChangesAsync();
+
+            // Update FollowUp record if this is for a scheduled follow-up
+            if (request.FollowUpId.HasValue)
+            {
+                var followUp = await _context.FollowUps.FindAsync(request.FollowUpId.Value);
+                if (followUp != null)
+                {
+                    followUp.Status = FollowUpStatus.Sent;
+                    followUp.SentAt = DateTime.UtcNow;
+                    followUp.EmailLogId = emailLog.Id;
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        return result;
     }
 
     public async Task<EmailResult> SendEmailAsync(EmailRequest request)
+    {
+        return await SendEmailInternalAsync(request);
+    }
+
+    private async Task<EmailResult> SendEmailInternalAsync(EmailRequest request)
     {
         try
         {
