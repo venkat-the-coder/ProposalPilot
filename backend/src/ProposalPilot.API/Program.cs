@@ -56,10 +56,13 @@ try
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICurrentUserService, ProposalPilot.Infrastructure.Services.CurrentUserService>();
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IUserService, ProposalPilot.Infrastructure.Services.UserService>();
 
-    // Claude API Service with HttpClient
-    builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiService>()
+    // Cache Service
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICacheService, ProposalPilot.Infrastructure.Services.RedisCacheService>();
+
+    // Claude API Service with HttpClient and Caching
+    builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));
-    // Note: Polly retry policies configured in ClaudeApiService
+    // Note: Caching and retry policies configured in ClaudeApiServiceWithCache
 
     // Authentication
     builder.Services.AddAuthentication(options =>

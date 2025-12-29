@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<Client> Clients { get; set; }
+    public DbSet<Brief> Briefs { get; set; }
     public DbSet<Proposal> Proposals { get; set; }
     public DbSet<ProposalSection> ProposalSections { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }

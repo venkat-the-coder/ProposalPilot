@@ -16,7 +16,11 @@ public class Proposal : BaseEntity
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
 
-    // Brief analysis
+    // Brief reference
+    public Guid? BriefId { get; set; }
+    public Brief? Brief { get; set; }
+
+    // Brief analysis (legacy - use Brief entity instead)
     public string? OriginalBrief { get; set; }
     public string? BriefAnalysis { get; set; }
 
