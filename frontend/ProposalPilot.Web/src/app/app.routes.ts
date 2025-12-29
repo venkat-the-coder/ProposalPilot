@@ -32,5 +32,19 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)
   },
+  {
+    path: 'briefs',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'new',
+        loadComponent: () => import('./features/briefs/components/brief-input.component').then(m => m.BriefInputComponent)
+      },
+      {
+        path: ':id/analysis',
+        loadComponent: () => import('./features/briefs/components/brief-analysis-result.component').then(m => m.BriefAnalysisResultComponent)
+      }
+    ]
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];
