@@ -47,6 +47,7 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IAuthService, ProposalPilot.Infrastructure.Services.AuthService>();
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICurrentUserService, ProposalPilot.Infrastructure.Services.CurrentUserService>();
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IUserService, ProposalPilot.Infrastructure.Services.UserService>();
 
     // Authentication
     builder.Services.AddAuthentication(options =>
