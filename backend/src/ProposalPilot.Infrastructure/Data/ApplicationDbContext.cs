@@ -10,8 +10,14 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // DbSets will be added as we create entities
-    // Example: public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Client> Clients { get; set; }
+    public DbSet<Proposal> Proposals { get; set; }
+    public DbSet<ProposalSection> ProposalSections { get; set; }
+    public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<ProposalAnalytics> ProposalAnalytics { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
