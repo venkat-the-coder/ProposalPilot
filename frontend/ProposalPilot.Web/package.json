@@ -34,9 +34,11 @@
     "@ngrx/effects": "^21.0.1",
     "@ngrx/store": "^21.0.1",
     "@ngrx/store-devtools": "^21.0.1",
+    "ngx-quill": "^30.0.1",
     "ngx-toastr": "^19.1.0",
     "primeicons": "^7.0.0",
     "primeng": "^21.0.2",
+    "quill": "^2.0.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

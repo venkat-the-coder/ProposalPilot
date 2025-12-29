@@ -23,4 +23,8 @@ export class ProposalService {
   getProposals(): Observable<Proposal[]> {
     return this.http.get<Proposal[]>(this.API_URL);
   }
+
+  updateProposal(id: string, updates: any): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/${id}`, updates);
+  }
 }

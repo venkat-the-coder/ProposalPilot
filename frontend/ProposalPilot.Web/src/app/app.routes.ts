@@ -53,6 +53,10 @@ export const routes: Routes = [
       {
         path: ':id',
         loadComponent: () => import('./features/proposals/components/proposal-view.component').then(m => m.ProposalViewComponent)
+      },
+      {
+        path: ':id/edit',
+        loadComponent: () => import('./features/proposals/components/proposal-editor.component').then(m => m.ProposalEditorComponent)
       }
     ]
   },

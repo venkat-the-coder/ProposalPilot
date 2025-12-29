@@ -99,4 +99,36 @@ public class ProposalsController : ControllerBase
 
         return Ok(proposals);
     }
+
+    /// <summary>
+    /// Update a proposal
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateProposal(Guid id, [FromBody] UpdateProposalRequest request)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        try
+        {
+            var command = new ProposalPilot.Application.Features.Proposals.Commands.UpdateProposal.UpdateProposalCommand(
+                id,
+                _currentUserService.UserId.Value,
+                request.Title,
+                request.Description,
+                request.Sections
+            );
+
+            var success = await _mediator.Send(command);
+
+            if (!success)
+                return NotFound();
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error updating proposal", error = ex.Message });
+        }
+    }
 }

@@ -46,3 +46,9 @@ public record GenerateProposalRequest(
     string? ProposalLength = null,
     string? Emphasis = null
 );
+
+public record UpdateProposalRequest(
+    string? Title = null,
+    string? Description = null,
+    Dictionary<string, string>? Sections = null
+);

@@ -129,6 +129,9 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
             <button routerLink="/briefs/new" class="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300">
               ← New Brief
             </button>
+            <button [routerLink]="['/proposals', proposal.id, 'edit']" class="px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700">
+              Edit Proposal
+            </button>
             <button class="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700">
               Send to Client
             </button>
