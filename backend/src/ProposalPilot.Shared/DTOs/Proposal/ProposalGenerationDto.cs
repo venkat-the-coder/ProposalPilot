@@ -52,3 +52,21 @@ public record UpdateProposalRequest(
     string? Description = null,
     Dictionary<string, string>? Sections = null
 );
+
+/// <summary>
+/// Request to send a proposal via email
+/// </summary>
+public record SendProposalEmailApiRequest(
+    string RecipientEmail,
+    string RecipientName,
+    string? PersonalMessage = null
+);
+
+/// <summary>
+/// Response after sending a proposal email
+/// </summary>
+public record SendProposalEmailResponse(
+    bool Success,
+    string Message,
+    DateTime? SentAt = null
+);

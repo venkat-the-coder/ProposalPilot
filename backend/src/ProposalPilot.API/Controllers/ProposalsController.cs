@@ -19,6 +19,7 @@ public class ProposalsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly ProposalPilot.Infrastructure.Services.IPdfExportService _pdfExportService;
     private readonly ProposalPilot.Infrastructure.Services.IDocxExportService _docxExportService;
+    private readonly IEmailService _emailService;
     private readonly ILogger<ProposalsController> _logger;
 
     public ProposalsController(
@@ -27,6 +28,7 @@ public class ProposalsController : ControllerBase
         ApplicationDbContext context,
         ProposalPilot.Infrastructure.Services.IPdfExportService pdfExportService,
         ProposalPilot.Infrastructure.Services.IDocxExportService docxExportService,
+        IEmailService emailService,
         ILogger<ProposalsController> logger)
     {
         _mediator = mediator;
@@ -34,6 +36,7 @@ public class ProposalsController : ControllerBase
         _context = context;
         _pdfExportService = pdfExportService;
         _docxExportService = docxExportService;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -377,6 +380,85 @@ public class ProposalsController : ControllerBase
         {
             _logger.LogError(ex, "Error exporting DOCX for proposal {ProposalId}", id);
             return StatusCode(500, new { message = "An unexpected error occurred while exporting the document" });
+        }
+    }
+
+    /// <summary>
+    /// Send a proposal to a client via email
+    /// </summary>
+    [HttpPost("{id}/send")]
+    public async Task<ActionResult<SendProposalEmailResponse>> SendProposalEmail(
+        Guid id,
+        [FromBody] SendProposalEmailApiRequest request)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        try
+        {
+            // Get the proposal with user info
+            var proposal = await _context.Proposals
+                .Include(p => p.User)
+                .Include(p => p.Client)
+                .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+            if (proposal == null)
+                return NotFound(new { message = "Proposal not found" });
+
+            // Generate the share URL
+            var shareUrl = $"{Request.Scheme}://{Request.Host}/share/{proposal.ShareToken}";
+
+            // Make sure the proposal is public for sharing
+            if (!proposal.IsPublic)
+            {
+                proposal.IsPublic = true;
+                await _context.SaveChangesAsync();
+            }
+
+            // Prepare the email request
+            var emailRequest = new Application.Interfaces.SendProposalEmailRequest(
+                RecipientEmail: request.RecipientEmail,
+                RecipientName: request.RecipientName,
+                SenderName: $"{proposal.User.FirstName} {proposal.User.LastName}",
+                SenderEmail: proposal.User.Email,
+                ProposalTitle: proposal.Title,
+                ProposalSummary: proposal.Description ?? "Please review the attached proposal for your consideration.",
+                ProposalViewUrl: shareUrl,
+                PersonalMessage: request.PersonalMessage
+            );
+
+            // Send the email
+            var result = await _emailService.SendProposalAsync(emailRequest);
+
+            if (result.Success)
+            {
+                _logger.LogInformation(
+                    "Proposal {ProposalId} sent to {Email} by user {UserId}",
+                    id, request.RecipientEmail, _currentUserService.UserId);
+
+                return Ok(new SendProposalEmailResponse(
+                    Success: true,
+                    Message: "Proposal sent successfully!",
+                    SentAt: DateTime.UtcNow
+                ));
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Failed to send proposal {ProposalId} to {Email}: {Error}",
+                    id, request.RecipientEmail, result.ErrorMessage);
+
+                return BadRequest(new SendProposalEmailResponse(
+                    Success: false,
+                    Message: result.ErrorMessage ?? "Failed to send email"
+                ));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending proposal {ProposalId} to {Email}",
+                id, request.RecipientEmail);
+            return StatusCode(500, new { message = "An unexpected error occurred while sending the proposal" });
         }
     }
 }

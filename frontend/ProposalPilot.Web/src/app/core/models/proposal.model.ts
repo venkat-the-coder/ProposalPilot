@@ -97,3 +97,16 @@ export interface ProposalContent {
   investment: InvestmentSection;
   metadata: ProposalMetadata;
 }
+
+// Email sending interfaces
+export interface SendProposalEmailRequest {
+  recipientEmail: string;
+  recipientName: string;
+  personalMessage?: string;
+}
+
+export interface SendProposalEmailResponse {
+  success: boolean;
+  message: string;
+  sentAt?: string;
+}

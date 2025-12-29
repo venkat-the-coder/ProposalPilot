@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Proposal, GenerateProposalRequest } from '../models/proposal.model';
+import { Proposal, GenerateProposalRequest, SendProposalEmailRequest, SendProposalEmailResponse } from '../models/proposal.model';
 import { QualityScoreResult } from '../models/quality-score.model';
 
 @Injectable({
@@ -54,5 +54,9 @@ export class ProposalService {
 
   exportDocx(id: string): void {
     window.open(`${this.API_URL}/${id}/export/docx`, '_blank');
+  }
+
+  sendProposal(id: string, request: SendProposalEmailRequest): Observable<SendProposalEmailResponse> {
+    return this.http.post<SendProposalEmailResponse>(`${this.API_URL}/${id}/send`, request);
   }
 }
