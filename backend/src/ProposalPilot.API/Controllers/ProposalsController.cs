@@ -224,4 +224,34 @@ public class ProposalsController : ControllerBase
             viewHistory = analytics
         });
     }
+
+    /// <summary>
+    /// Score proposal quality with AI
+    /// </summary>
+    [HttpPost("{id}/score")]
+    public async Task<ActionResult> ScoreProposal(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        try
+        {
+            var command = new ProposalPilot.Application.Features.Proposals.Commands.ScoreProposal.ScoreProposalCommand(
+                id,
+                _currentUserService.UserId.Value
+            );
+
+            var result = await _mediator.Send(command);
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Error scoring proposal", error = ex.Message });
+        }
+    }
 }

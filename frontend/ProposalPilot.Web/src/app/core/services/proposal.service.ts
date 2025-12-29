@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Proposal, GenerateProposalRequest } from '../models/proposal.model';
+import { QualityScoreResult } from '../models/quality-score.model';
 
 @Injectable({
   providedIn: 'root'
@@ -41,5 +42,9 @@ export class ProposalService {
 
   getProposalAnalytics(id: string): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/${id}/analytics`);
+  }
+
+  scoreProposal(id: string): Observable<QualityScoreResult> {
+    return this.http.post<QualityScoreResult>(`${this.API_URL}/${id}/score`, {});
   }
 }

@@ -65,6 +65,9 @@ try
     // Proposal Generator Service
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IProposalGeneratorService, ProposalPilot.Infrastructure.Services.ProposalGeneratorService>();
 
+    // Quality Scorer Service
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IQualityScorerService, ProposalPilot.Infrastructure.Services.QualityScorerService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));

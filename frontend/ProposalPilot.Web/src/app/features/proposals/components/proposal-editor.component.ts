@@ -5,14 +5,17 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QuillModule } from 'ngx-quill';
 import { ProposalService } from '../../../core/services/proposal.service';
 import { Proposal, ProposalContent } from '../../../core/models/proposal.model';
+import { QualityScoreSidebarComponent } from './quality-score-sidebar.component';
 
 @Component({
   selector: 'app-proposal-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, QuillModule, RouterLink],
+  imports: [CommonModule, FormsModule, QuillModule, RouterLink, QualityScoreSidebarComponent],
   template: `
     <div class="min-h-screen bg-gray-50 py-8">
-      <div class="max-w-5xl mx-auto px-4">
+      <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Editor Column -->
+        <div class="lg:col-span-2">
         @if (loading) {
           <div class="flex items-center justify-center py-20">
             <div class="text-center">
@@ -152,6 +155,14 @@ import { Proposal, ProposalContent } from '../../../core/models/proposal.model';
             </button>
           </div>
         }
+        </div>
+
+        <!-- Quality Score Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-8">
+            <app-quality-score-sidebar [proposalId]="proposal?.id"></app-quality-score-sidebar>
+          </div>
+        </div>
       </div>
     </div>
   `,
