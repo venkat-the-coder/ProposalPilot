@@ -56,6 +56,11 @@ try
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.ICurrentUserService, ProposalPilot.Infrastructure.Services.CurrentUserService>();
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IUserService, ProposalPilot.Infrastructure.Services.UserService>();
 
+    // Claude API Service with HttpClient
+    builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiService>()
+        .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+    // Note: Polly retry policies configured in ClaudeApiService
+
     // Authentication
     builder.Services.AddAuthentication(options =>
     {
