@@ -62,6 +62,9 @@ try
     // Brief Analyzer Service
     builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IBriefAnalyzerService, ProposalPilot.Infrastructure.Services.BriefAnalyzerService>();
 
+    // Proposal Generator Service
+    builder.Services.AddScoped<ProposalPilot.Application.Interfaces.IProposalGeneratorService, ProposalPilot.Infrastructure.Services.ProposalGeneratorService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));
