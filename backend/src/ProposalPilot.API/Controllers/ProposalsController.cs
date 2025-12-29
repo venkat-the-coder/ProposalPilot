@@ -62,6 +62,42 @@ public class ProposalsController : ControllerBase
     }
 
     /// <summary>
+    /// Get a shared proposal by token (public, no auth required)
+    /// </summary>
+    [HttpGet("share/{token}")]
+    [AllowAnonymous]
+    public async Task<ActionResult> GetSharedProposal(string token)
+    {
+        var proposal = await _context.Proposals
+            .Include(p => p.Client)
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.ShareToken == token && p.IsPublic);
+
+        if (proposal == null)
+            return NotFound(new { message = "Proposal not found or not publicly shared" });
+
+        // Track view
+        proposal.ViewCount++;
+        if (proposal.FirstViewedAt == null)
+            proposal.FirstViewedAt = DateTime.UtcNow;
+        proposal.LastViewedAt = DateTime.UtcNow;
+
+        // Create analytics record
+        var analytics = new ProposalPilot.Domain.Entities.ProposalAnalytics
+        {
+            ProposalId = proposal.Id,
+            ViewedAt = DateTime.UtcNow,
+            ViewerUserAgent = Request.Headers["User-Agent"].ToString(),
+            ViewerIpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+        };
+        _context.ProposalAnalytics.Add(analytics);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(proposal);
+    }
+
+    /// <summary>
     /// Get a proposal by ID
     /// </summary>
     [HttpGet("{id}")]
@@ -130,5 +166,62 @@ public class ProposalsController : ControllerBase
         {
             return StatusCode(500, new { message = "Error updating proposal", error = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Toggle proposal public sharing
+    /// </summary>
+    [HttpPost("{id}/share/toggle")]
+    public async Task<ActionResult> ToggleSharing(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        var proposal = await _context.Proposals
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+        if (proposal == null)
+            return NotFound();
+
+        proposal.IsPublic = !proposal.IsPublic;
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            isPublic = proposal.IsPublic,
+            shareToken = proposal.ShareToken,
+            shareUrl = $"{Request.Scheme}://{Request.Host}/share/{proposal.ShareToken}"
+        });
+    }
+
+    /// <summary>
+    /// Get proposal analytics
+    /// </summary>
+    [HttpGet("{id}/analytics")]
+    public async Task<ActionResult> GetProposalAnalytics(Guid id)
+    {
+        if (!_currentUserService.UserId.HasValue)
+            return Unauthorized();
+
+        var proposal = await _context.Proposals
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == _currentUserService.UserId.Value);
+
+        if (proposal == null)
+            return NotFound();
+
+        var analytics = await _context.ProposalAnalytics
+            .Where(a => a.ProposalId == id)
+            .OrderByDescending(a => a.ViewedAt)
+            .ToListAsync();
+
+        return Ok(new
+        {
+            totalViews = proposal.ViewCount,
+            firstViewedAt = proposal.FirstViewedAt,
+            lastViewedAt = proposal.LastViewedAt,
+            isPublic = proposal.IsPublic,
+            shareToken = proposal.ShareToken,
+            viewHistory = analytics
+        });
     }
 }

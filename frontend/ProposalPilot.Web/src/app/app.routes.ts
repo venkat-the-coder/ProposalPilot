@@ -4,6 +4,10 @@ import { authGuard, guestGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   {
+    path: 'share/:token',
+    loadComponent: () => import('./features/proposals/components/proposal-public-view.component').then(m => m.ProposalPublicViewComponent)
+  },
+  {
     path: 'auth',
     canActivate: [guestGuard],
     children: [
@@ -57,6 +61,10 @@ export const routes: Routes = [
       {
         path: ':id/edit',
         loadComponent: () => import('./features/proposals/components/proposal-editor.component').then(m => m.ProposalEditorComponent)
+      },
+      {
+        path: ':id/analytics',
+        loadComponent: () => import('./features/proposals/components/proposal-analytics.component').then(m => m.ProposalAnalyticsComponent)
       }
     ]
   },

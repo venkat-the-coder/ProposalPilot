@@ -27,4 +27,19 @@ export class ProposalService {
   updateProposal(id: string, updates: any): Observable<void> {
     return this.http.put<void>(`${this.API_URL}/${id}`, updates);
   }
+
+  toggleSharing(id: string): Observable<{ isPublic: boolean; shareToken: string; shareUrl: string }> {
+    return this.http.post<{ isPublic: boolean; shareToken: string; shareUrl: string }>(
+      `${this.API_URL}/${id}/share/toggle`,
+      {}
+    );
+  }
+
+  getSharedProposal(token: string): Observable<Proposal> {
+    return this.http.get<Proposal>(`${this.API_URL}/share/${token}`);
+  }
+
+  getProposalAnalytics(id: string): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/${id}/analytics`);
+  }
 }

@@ -1,3 +1,10 @@
+export interface User {
+  id: string;
+  email: string;
+  fullName?: string;
+  companyName?: string;
+}
+
 export interface Proposal {
   id: string;
   title: string;
@@ -28,6 +35,7 @@ export interface Proposal {
   updatedAt: string;
   client?: any; // Client details
   brief?: any; // Brief details
+  user?: User; // User details
 }
 
 export interface GenerateProposalRequest {
