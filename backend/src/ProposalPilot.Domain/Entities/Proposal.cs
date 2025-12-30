@@ -20,6 +20,10 @@ public class Proposal : BaseEntity
     public Guid? BriefId { get; set; }
     public Brief? Brief { get; set; }
 
+    // Template reference (if created from template)
+    public Guid? TemplateId { get; set; }
+    public ProposalTemplate? Template { get; set; }
+
     // Brief analysis (legacy - use Brief entity instead)
     public string? OriginalBrief { get; set; }
     public string? BriefAnalysis { get; set; }
