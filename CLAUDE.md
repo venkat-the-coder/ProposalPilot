@@ -1,10 +1,10 @@
-# ProposalPilot AI - Claude Code Instructions
+# ProposalMind AI - Claude Code Instructions
 
-> **Read this file first.** This contains all context needed to build ProposalPilot AI.
+> **Read this file first.** This contains all context needed to build ProposalMind AI.
 
 ## Project Overview
 
-ProposalPilot AI is an AI-powered SaaS platform that helps freelancers and agencies create winning proposals in minutes. Users paste a client brief, AI analyzes it, generates a personalized proposal with 3-tier pricing, and tracks engagement.
+ProposalMind AI is an AI-powered SaaS platform that helps freelancers and agencies create winning proposals in minutes. Users paste a client brief, AI analyzes it, generates a personalized proposal with 3-tier pricing, and tracks engagement.
 
 **Core Promise:** Turn client briefs into winning proposals in 5 minutes, not 5 hours.
 
@@ -26,14 +26,14 @@ ProposalPilot AI is an AI-powered SaaS platform that helps freelancers and agenc
 **Clean Architecture with 5 projects:**
 
 ```
-ProposalPilot/
+ProposalMind/
 ├── src/
-│   ├── ProposalPilot.API/           # Web API, Controllers, Middleware
-│   ├── ProposalPilot.Application/   # Business logic, CQRS, MediatR
-│   ├── ProposalPilot.Domain/        # Entities, Enums, Interfaces
-│   ├── ProposalPilot.Infrastructure/# EF Core, External services
-│   └── ProposalPilot.Shared/        # DTOs, Configuration
-├── ProposalPilot.Web/               # Angular 18 frontend
+│   ├── ProposalMind.API/           # Web API, Controllers, Middleware
+│   ├── ProposalMind.Application/   # Business logic, CQRS, MediatR
+│   ├── ProposalMind.Domain/        # Entities, Enums, Interfaces
+│   ├── ProposalMind.Infrastructure/# EF Core, External services
+│   └── ProposalMind.Shared/        # DTOs, Configuration
+├── ProposalMind.Web/               # Angular 18 frontend
 ├── docker-compose.yml
 └── PROJECTPLAN.md
 ```
@@ -108,14 +108,14 @@ ProposalPilot/
 
 Create `.env` file with:
 ```
-DB_CONNECTION_STRING=Server=localhost;Database=ProposalPilotDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
+DB_CONNECTION_STRING=Server=localhost;Database=ProposalMindDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 SENDGRID_API_KEY=SG.xxxxx
 STRIPE_SECRET_KEY=sk_test_xxxxx
 STRIPE_PUBLISHABLE_KEY=pk_test_xxxxx
 JWT_SECRET=your-256-bit-secret-key-minimum-32-chars
-JWT_ISSUER=ProposalPilot
-JWT_AUDIENCE=ProposalPilotUsers
+JWT_ISSUER=ProposalMind
+JWT_AUDIENCE=ProposalMindUsers
 REDIS_CONNECTION_STRING=localhost:6379
 ```
 
@@ -133,13 +133,13 @@ REDIS_CONNECTION_STRING=localhost:6379
 dotnet build
 
 # Run API
-cd src/ProposalPilot.API && dotnet run
+cd src/ProposalMind.API && dotnet run
 
 # Run Angular
-cd ProposalPilot.Web && ng serve
+cd ProposalMind.Web && ng serve
 
 # Run migrations
-dotnet ef database update -p src/ProposalPilot.Infrastructure -s src/ProposalPilot.API
+dotnet ef database update -p src/ProposalMind.Infrastructure -s src/ProposalMind.API
 
 # Docker services
 docker-compose up -d

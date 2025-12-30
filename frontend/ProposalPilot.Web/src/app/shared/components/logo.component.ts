@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
       <!-- Logo Image -->
       <img
         [src]="logoUrl"
-        [alt]="'ProposalPilot AI Logo'"
+        [alt]="'ProposalMind Logo'"
         [style.height.px]="iconSize"
         class="flex-shrink-0 object-contain w-auto"
       />
@@ -26,15 +26,12 @@ import { CommonModule } from '@angular/common';
               Proposal
             </span>
             <span class="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Pilot
-            </span>
-            <span class="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-              AI
+              Mind
             </span>
           </span>
           @if (showTagline) {
             <span class="text-xs text-gray-600 font-medium tracking-wide">
-              Navigate. Create. Win.
+              AI-Powered Thinking
             </span>
           }
         </div>

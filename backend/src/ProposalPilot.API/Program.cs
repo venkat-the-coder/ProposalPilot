@@ -22,7 +22,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    Log.Information("Starting ProposalPilot API");
+    Log.Information("Starting ProposalMind API");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +46,7 @@ try
     builder.Services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = builder.Configuration.GetConnectionString("Redis");
-        options.InstanceName = "ProposalPilot_";
+        options.InstanceName = "ProposalMind_";
     });
 
     // MediatR
@@ -189,7 +189,7 @@ try
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
-            c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProposalPilot API v1");
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "ProposalMind API v1");
             c.RoutePrefix = "swagger"; // Swagger at /swagger
         });
     }

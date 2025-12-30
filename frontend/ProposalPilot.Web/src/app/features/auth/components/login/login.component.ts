@@ -140,7 +140,7 @@ import { LogoComponent } from '../../../../shared/components/logo.component';
               <div class="w-full border-t border-gray-200"></div>
             </div>
             <div class="relative flex justify-center text-sm">
-              <span class="px-4 bg-white text-gray-500 rounded-full">New to ProposalPilot?</span>
+              <span class="px-4 bg-white text-gray-500 rounded-full">New to ProposalMind?</span>
             </div>
           </div>
 

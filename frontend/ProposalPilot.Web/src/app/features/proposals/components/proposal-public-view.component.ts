@@ -206,7 +206,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
               </p>
             }
             <p class="text-sm text-gray-500 mt-6">
-              Powered by ProposalPilot AI
+              Powered by ProposalMind AI
             </p>
           </div>
         }

@@ -119,7 +119,7 @@ interface PricingTier {
 
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="font-bold text-gray-900 mb-2">Is there a free trial?</h3>
-              <p class="text-gray-600">The Free plan gives you 3 proposals per month to try ProposalPilot risk-free!</p>
+              <p class="text-gray-600">The Free plan gives you 3 proposals per month to try ProposalMind risk-free!</p>
             </div>
           </div>
         </div>
@@ -137,7 +137,7 @@ export class PricingComponent implements OnInit {
       name: 'Free',
       price: 0,
       priceLabel: '$0',
-      description: 'Perfect for trying out ProposalPilot',
+      description: 'Perfect for trying out ProposalMind',
       features: [
         '3 proposals per month',
         'Basic templates',

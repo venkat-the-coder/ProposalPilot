@@ -261,7 +261,7 @@ public class SendGridEmailService : IEmailService
                     <tr>
                         <td style=""background-color: #F9FAFB; padding: 30px; border-radius: 0 0 12px 12px; text-align: center; border-top: 1px solid #E5E7EB;"">
                             <p style=""color: #6B7280; font-size: 14px; margin: 0 0 10px 0;"">
-                                Sent by {HtmlEncode(request.SenderName)} via ProposalPilot
+                                Sent by {HtmlEncode(request.SenderName)} via ProposalMind
                             </p>
                             <p style=""color: #9CA3AF; font-size: 12px; margin: 0;"">
                                 Questions? Reply directly to this email.
@@ -295,7 +295,7 @@ View the full proposal here:
 {request.ProposalViewUrl}
 
 ---
-Sent via ProposalPilot
+Sent via ProposalMind
 Questions? Reply directly to this email.
 ";
     }
@@ -361,7 +361,7 @@ Questions? Reply directly to this email.
                     <tr>
                         <td style=""background-color: #F9FAFB; padding: 30px; border-radius: 0 0 12px 12px; text-align: center; border-top: 1px solid #E5E7EB;"">
                             <p style=""color: #9CA3AF; font-size: 12px; margin: 0;"">
-                                Sent via ProposalPilot | Reply directly to this email
+                                Sent via ProposalMind | Reply directly to this email
                             </p>
                         </td>
                     </tr>
@@ -391,7 +391,7 @@ Best regards,
 {request.SenderName}
 
 ---
-Sent via ProposalPilot
+Sent via ProposalMind
 ";
     }
 
