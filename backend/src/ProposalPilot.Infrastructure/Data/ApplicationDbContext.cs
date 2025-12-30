@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Brief> Briefs { get; set; }
     public DbSet<Proposal> Proposals { get; set; }
     public DbSet<ProposalSection> ProposalSections { get; set; }
+    public DbSet<ProposalTemplate> ProposalTemplates { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<ProposalAnalytics> ProposalAnalytics { get; set; }
