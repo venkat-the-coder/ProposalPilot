@@ -37,6 +37,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)
   },
   {
+    path: 'analytics',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/analytics/analytics-dashboard.component').then(m => m.AnalyticsDashboardComponent)
+  },
+  {
     path: 'briefs',
     canActivate: [authGuard],
     children: [

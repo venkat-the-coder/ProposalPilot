@@ -87,6 +87,9 @@ try
     // Engagement Service
     builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IEngagementService, ProposalPilot.Infrastructure.Services.EngagementService>();
 
+    // Analytics Service
+    builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IAnalyticsService, ProposalPilot.Infrastructure.Services.AnalyticsService>();
+
     // Claude API Service with HttpClient and Caching
     builder.Services.AddHttpClient<ProposalPilot.Application.Interfaces.IClaudeApiService, ProposalPilot.Infrastructure.Services.ClaudeApiServiceWithCache>()
         .SetHandlerLifetime(TimeSpan.FromMinutes(5));

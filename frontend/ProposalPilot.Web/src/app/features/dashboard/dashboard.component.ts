@@ -1,20 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <div class="min-h-screen bg-gray-50">
       <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16">
-            <div class="flex items-center">
-              <h1 class="text-xl font-bold text-gray-900">ProposalPilot</h1>
+            <div class="flex items-center space-x-8">
+              <a routerLink="/dashboard" class="text-xl font-bold text-gray-900">ProposalPilot</a>
+              <div class="hidden md:flex space-x-4">
+                <a routerLink="/dashboard" class="text-sm font-medium text-blue-600 hover:text-blue-700">Dashboard</a>
+                <a routerLink="/briefs/new" class="text-sm font-medium text-gray-600 hover:text-gray-900">New Brief</a>
+                <a routerLink="/analytics" class="text-sm font-medium text-gray-600 hover:text-gray-900">Analytics</a>
+                <a routerLink="/profile" class="text-sm font-medium text-gray-600 hover:text-gray-900">Profile</a>
+                <a routerLink="/settings" class="text-sm font-medium text-gray-600 hover:text-gray-900">Settings</a>
+              </div>
             </div>
             <div class="flex items-center space-x-4">
               @if (currentUser) {
