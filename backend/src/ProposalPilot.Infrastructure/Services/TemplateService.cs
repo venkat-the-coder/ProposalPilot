@@ -79,7 +79,7 @@ public class TemplateService : ITemplateService
                     Tags = ParseTags(t.Tags),
                     IsSystemTemplate = t.IsSystemTemplate,
                     IsPublic = t.IsPublic,
-                    UserName = t.User != null ? t.User.FullName : null,
+                    UserName = t.User != null ? $"{t.User.FirstName} {t.User.LastName}" : null,
                     UsageCount = t.UsageCount,
                     WinRate = t.WinRate,
                     ThumbnailUrl = t.ThumbnailUrl,
@@ -410,12 +410,12 @@ public class TemplateService : ITemplateService
             // Create sections from template
             var sections = new[]
             {
-                new ProposalSection { ProposalId = proposal.Id, Title = "Introduction", Content = content.Introduction, Order = 1 },
-                new ProposalSection { ProposalId = proposal.Id, Title = "Problem Statement", Content = content.ProblemStatement, Order = 2 },
-                new ProposalSection { ProposalId = proposal.Id, Title = "Proposed Solution", Content = content.ProposedSolution, Order = 3 },
-                new ProposalSection { ProposalId = proposal.Id, Title = "Methodology", Content = content.Methodology, Order = 4 },
-                new ProposalSection { ProposalId = proposal.Id, Title = "Team and Experience", Content = content.TeamAndExperience, Order = 5 },
-                new ProposalSection { ProposalId = proposal.Id, Title = "Call to Action", Content = content.CallToAction, Order = 6 }
+                new ProposalSection { ProposalId = proposal.Id, Title = "Introduction", Content = content.Introduction, DisplayOrder = 1 },
+                new ProposalSection { ProposalId = proposal.Id, Title = "Problem Statement", Content = content.ProblemStatement, DisplayOrder = 2 },
+                new ProposalSection { ProposalId = proposal.Id, Title = "Proposed Solution", Content = content.ProposedSolution, DisplayOrder = 3 },
+                new ProposalSection { ProposalId = proposal.Id, Title = "Methodology", Content = content.Methodology, DisplayOrder = 4 },
+                new ProposalSection { ProposalId = proposal.Id, Title = "Team and Experience", Content = content.TeamAndExperience, DisplayOrder = 5 },
+                new ProposalSection { ProposalId = proposal.Id, Title = "Call to Action", Content = content.CallToAction, DisplayOrder = 6 }
             };
 
             _context.Set<ProposalSection>().AddRange(sections);
@@ -522,7 +522,7 @@ public class TemplateService : ITemplateService
             IsSystemTemplate = template.IsSystemTemplate,
             IsPublic = template.IsPublic,
             UserId = template.UserId,
-            UserName = template.User?.FullName,
+            UserName = template.User != null ? $"{template.User.FirstName} {template.User.LastName}" : null,
             UsageCount = template.UsageCount,
             WinRate = template.WinRate,
             ThumbnailUrl = template.ThumbnailUrl,
