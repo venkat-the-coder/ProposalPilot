@@ -156,7 +156,7 @@ import { User } from '../../core/models/auth.model';
           <div class="mb-8">
             <h2 class="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button class="card hover:shadow-2xl transition-all duration-300 text-left group">
+              <a routerLink="/briefs/new" class="card hover:shadow-2xl transition-all duration-300 text-left group cursor-pointer">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -164,9 +164,9 @@ import { User } from '../../core/models/auth.model';
                 </div>
                 <h3 class="font-semibold text-gray-900 mb-1">Create Proposal</h3>
                 <p class="text-sm text-gray-600">Start a new AI-powered proposal</p>
-              </button>
+              </a>
 
-              <button class="card hover:shadow-2xl transition-all duration-300 text-left group">
+              <a routerLink="/templates" class="card hover:shadow-2xl transition-all duration-300 text-left group cursor-pointer">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -174,9 +174,9 @@ import { User } from '../../core/models/auth.model';
                 </div>
                 <h3 class="font-semibold text-gray-900 mb-1">View Templates</h3>
                 <p class="text-sm text-gray-600">Browse proposal templates</p>
-              </button>
+              </a>
 
-              <button class="card hover:shadow-2xl transition-all duration-300 text-left group">
+              <a routerLink="/analytics" class="card hover:shadow-2xl transition-all duration-300 text-left group cursor-pointer">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -184,9 +184,9 @@ import { User } from '../../core/models/auth.model';
                 </div>
                 <h3 class="font-semibold text-gray-900 mb-1">View Analytics</h3>
                 <p class="text-sm text-gray-600">Check your performance</p>
-              </button>
+              </a>
 
-              <a routerLink="/settings" class="card hover:shadow-2xl transition-all duration-300 text-left group">
+              <a routerLink="/settings" class="card hover:shadow-2xl transition-all duration-300 text-left group cursor-pointer">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-r from-gray-500 to-gray-700 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
