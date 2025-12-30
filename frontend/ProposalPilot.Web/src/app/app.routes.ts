@@ -73,5 +73,19 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'templates',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/templates/components/template-list.component').then(m => m.TemplateListComponent)
+      },
+      {
+        path: ':id',
+        loadComponent: () => import('./features/templates/components/template-detail.component').then(m => m.TemplateDetailComponent)
+      }
+    ]
+  },
   { path: '**', redirectTo: '/dashboard' }
 ];
