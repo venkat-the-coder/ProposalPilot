@@ -138,7 +138,7 @@ try
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
 
-    // Swagger - Basic configuration (enhanced config temporarily disabled due to package issues)
+    // Swagger configuration
     builder.Services.AddSwaggerGen();
 
     // Health Checks (skip external checks in Testing environment)
