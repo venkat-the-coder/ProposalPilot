@@ -44,6 +44,7 @@ export interface GenerateProposalRequest {
   preferredTone?: string;
   proposalLength?: string;
   emphasis?: string;
+  templateId?: string;
 }
 
 export interface ProposalGenerationResult {

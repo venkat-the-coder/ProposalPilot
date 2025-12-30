@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { User } from '../../core/models/auth.model';
+import { LogoComponent } from '../../shared/components/logo.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, LogoComponent],
   template: `
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       <!-- Modern Navigation -->
@@ -15,8 +16,13 @@ import { User } from '../../core/models/auth.model';
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between h-16">
             <div class="flex items-center space-x-8">
-              <a routerLink="/dashboard" class="text-2xl font-extrabold text-gradient">
-                ProposalPilot
+              <a routerLink="/dashboard" class="flex items-center">
+                <app-logo
+                  [iconSize]="40"
+                  [showText]="true"
+                  [showTagline]="false"
+                  textClass="text-xl"
+                ></app-logo>
               </a>
               <div class="hidden md:flex space-x-2">
                 <a routerLink="/dashboard" class="nav-link nav-link-active">
@@ -79,6 +85,26 @@ import { User } from '../../core/models/auth.model';
       <!-- Main Content -->
       <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         @if (currentUser) {
+          <!-- Verification Reminder -->
+          @if (verificationReminderMessage) {
+            <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500 rounded-lg animate-fade-in">
+              <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <div class="flex-1">
+                  <p class="text-blue-900 font-semibold">{{ verificationReminderMessage }}</p>
+                  <p class="text-blue-700 text-sm mt-1">You can resend the verification email from your profile page if needed.</p>
+                </div>
+                <button (click)="verificationReminderMessage = ''" class="text-blue-600 hover:text-blue-800">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+
           <!-- Welcome Header -->
           <div class="mb-8 animate-slide-in-up">
             <div class="card-gradient p-8">
@@ -282,11 +308,22 @@ import { User } from '../../core/models/auth.model';
 })
 export class DashboardComponent implements OnInit {
   currentUser: User | null = null;
+  verificationReminderMessage = '';
 
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    // Check for verification reminder from registration
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras?.state?.['showVerificationReminder']) {
+      this.verificationReminderMessage = navigation.extras.state['message'] as string;
+      // Clear message after 10 seconds
+      setTimeout(() => {
+        this.verificationReminderMessage = '';
+      }, 10000);
+    }
+  }
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {

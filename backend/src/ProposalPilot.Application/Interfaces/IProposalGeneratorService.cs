@@ -1,5 +1,6 @@
 namespace ProposalPilot.Application.Interfaces;
 
+using ProposalPilot.Domain.Entities;
 using ProposalPilot.Shared.DTOs.Brief;
 using ProposalPilot.Shared.DTOs.Proposal;
 
@@ -12,5 +13,6 @@ public interface IProposalGeneratorService
         decimal? hourlyRate = null,
         string? preferredTone = null,
         string? proposalLength = null,
+        ProposalTemplate? template = null,
         CancellationToken cancellationToken = default);
 }

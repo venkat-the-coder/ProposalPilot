@@ -8,5 +8,6 @@ public record GenerateProposalCommand(
     Guid BriefId,
     Guid ClientId,
     string? PreferredTone = null,
-    string? ProposalLength = null
+    string? ProposalLength = null,
+    Guid? TemplateId = null
 ) : IRequest<Guid>; // Returns the new Proposal ID

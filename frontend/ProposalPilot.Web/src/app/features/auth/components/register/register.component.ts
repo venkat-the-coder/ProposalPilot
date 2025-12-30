@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { LogoComponent } from '../../../../shared/components/logo.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, LogoComponent],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <!-- Animated Background -->
@@ -29,13 +30,14 @@ import { AuthService } from '../../../../core/services/auth.service';
         </div>
 
         <!-- Logo & Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-5xl font-extrabold text-gradient mb-2">
-            ProposalPilot
-          </h1>
-          <p class="text-gray-600 text-lg">
-            Start creating winning proposals in minutes
-          </p>
+        <div class="flex flex-col items-center mb-8">
+          <app-logo
+            [iconSize]="80"
+            [showText]="true"
+            [showTagline]="true"
+            textClass="text-4xl"
+            containerClass="mb-3"
+          ></app-logo>
         </div>
 
         <!-- Register Form Card -->
@@ -360,7 +362,13 @@ export class RegisterComponent {
 
     this.authService.register(registerData).subscribe({
       next: () => {
-        this.router.navigate(['/dashboard']);
+        // Navigate to dashboard and show verification reminder
+        this.router.navigate(['/dashboard'], {
+          state: {
+            showVerificationReminder: true,
+            message: 'Account created successfully! Please check your email to verify your account.'
+          }
+        });
       },
       error: (err) => {
         this.error = err.error?.message || 'Registration failed. Please try again.';

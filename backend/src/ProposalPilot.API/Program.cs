@@ -238,8 +238,14 @@ try
     {
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
         await db.Database.MigrateAsync();
         Log.Information("Database migration completed");
+
+        // Seed default templates
+        await ProposalPilot.Infrastructure.Data.SeedData.TemplateSeeder.SeedTemplatesAsync(db, logger);
+        Log.Information("Template seeding completed");
     }
 
     app.Run();

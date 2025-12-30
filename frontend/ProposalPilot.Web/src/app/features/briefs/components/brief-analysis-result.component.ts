@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BriefService } from '../../../core/services/brief.service';
 import { ProposalService } from '../../../core/services/proposal.service';
+import { TemplateService } from '../../../core/services/template.service';
 import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
+import { TemplateListItem } from '../../../core/models/template.model';
 
 @Component({
   selector: 'app-brief-analysis-result',
@@ -12,7 +14,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
   template: `
     <div class="min-h-screen bg-gray-50 py-8">
       <div class="max-w-6xl mx-auto px-4">
-        @if (loading) {
+        @if (loading()) {
           <div class="flex items-center justify-center py-20">
             <div class="text-center">
               <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -24,39 +26,39 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
           </div>
         }
 
-        @if (error) {
+         @if (error()) {
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {{ error }}
+            {{ error() }}
           </div>
         }
 
-        @if (brief && analysis) {
+        @if (brief() && analysis()) {
           <div class="bg-white rounded-lg shadow-md p-8 mb-6">
             <div class="flex items-start justify-between mb-6">
               <div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ brief.title }}</h1>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ brief()!.title }}</h1>
                 <div class="flex items-center gap-4 text-sm text-gray-600">
                   <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    {{ brief.createdAt | date:'short' }}
+                    {{ brief()!.createdAt | date:'short' }}
                   </span>
                   <span class="px-3 py-1 rounded-full text-xs font-semibold"
-                        [class]="brief.status === 'Analyzed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
-                    {{ brief.status }}
+                        [class]="brief()!.status === 'Analyzed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'">
+                    {{ brief()!.status }}
                   </span>
-                  @if (brief.tokensUsed) {
-                    <span class="text-xs">{{ brief.tokensUsed }} tokens</span>
+                  @if (brief()!.tokensUsed) {
+                    <span class="text-xs">{{ brief()!.tokensUsed }} tokens</span>
                   }
                 </div>
               </div>
               <button
                 (click)="generateProposal()"
-                [disabled]="generating"
+                [disabled]="generating()"
                 class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                @if (generating) {
+                @if (generating()) {
                   <span class="flex items-center">
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -77,19 +79,19 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div class="p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Type</p>
-                <p class="font-semibold text-gray-900">{{ analysis.projectOverview.type }}</p>
+                <p class="font-semibold text-gray-900">{{ analysis()!.projectOverview.type }}</p>
               </div>
               <div class="p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Industry</p>
-                <p class="font-semibold text-gray-900">{{ analysis.projectOverview.industry }}</p>
+                <p class="font-semibold text-gray-900">{{ analysis()!.projectOverview.industry }}</p>
               </div>
               <div class="p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Complexity</p>
-                <p class="font-semibold text-gray-900 capitalize">{{ analysis.projectOverview.complexity }}</p>
+                <p class="font-semibold text-gray-900 capitalize">{{ analysis()!.projectOverview.complexity }}</p>
               </div>
               <div class="p-4 bg-blue-50 rounded-lg">
                 <p class="text-sm text-gray-600 mb-1">Confidence</p>
-                <p class="font-semibold text-gray-900">{{ analysis.projectOverview.confidenceScore }}%</p>
+                <p class="font-semibold text-gray-900">{{ analysis()!.projectOverview.confidenceScore }}%</p>
               </div>
             </div>
           </div>
@@ -102,7 +104,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div class="mb-4">
                 <h3 class="font-semibold text-gray-700 mb-2">Explicit Requirements</h3>
                 <ul class="space-y-1">
-                  @for (req of analysis.requirements.explicit; track req) {
+                  @for (req of analysis()!.requirements.explicit; track req) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-blue-600 mr-2">•</span>
                       <span>{{ req }}</span>
@@ -114,7 +116,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div class="mb-4">
                 <h3 class="font-semibold text-gray-700 mb-2">Implicit Requirements</h3>
                 <ul class="space-y-1">
-                  @for (req of analysis.requirements.implicit; track req) {
+                  @for (req of analysis()!.requirements.implicit; track req) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-gray-400 mr-2">•</span>
                       <span>{{ req }}</span>
@@ -123,11 +125,11 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                 </ul>
               </div>
 
-              @if (analysis.requirements.technical.length > 0) {
+              @if (analysis()!.requirements.technical.length > 0) {
                 <div>
                   <h3 class="font-semibold text-gray-700 mb-2">Technical Specs</h3>
                   <ul class="space-y-1">
-                    @for (req of analysis.requirements.technical; track req) {
+                    @for (req of analysis()!.requirements.technical; track req) {
                       <li class="text-sm text-gray-600 flex items-start">
                         <span class="text-purple-600 mr-2">•</span>
                         <span>{{ req }}</span>
@@ -145,7 +147,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div class="mb-4">
                 <h3 class="font-semibold text-gray-700 mb-2">Pain Points</h3>
                 <ul class="space-y-1">
-                  @for (point of analysis.clientInsights.painPoints; track point) {
+                  @for (point of analysis()!.clientInsights.painPoints; track point) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-red-500 mr-2">⚠</span>
                       <span>{{ point }}</span>
@@ -157,7 +159,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div class="mb-4">
                 <h3 class="font-semibold text-gray-700 mb-2">Success Criteria</h3>
                 <ul class="space-y-1">
-                  @for (criteria of analysis.clientInsights.successCriteria; track criteria) {
+                  @for (criteria of analysis()!.clientInsights.successCriteria; track criteria) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-green-600 mr-2">✓</span>
                       <span>{{ criteria }}</span>
@@ -169,7 +171,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div>
                 <h3 class="font-semibold text-gray-700 mb-2">Decision Factors</h3>
                 <ul class="space-y-1">
-                  @for (factor of analysis.clientInsights.decisionFactors; track factor) {
+                  @for (factor of analysis()!.clientInsights.decisionFactors; track factor) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-blue-600 mr-2">→</span>
                       <span>{{ factor }}</span>
@@ -189,21 +191,21 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                   <p class="text-sm">
                     <span class="font-medium">Urgency:</span>
                     <span class="ml-2 px-2 py-1 rounded text-xs font-semibold"
-                          [class]="analysis.projectSignals.timeline.urgency === 'high' ? 'bg-red-100 text-red-800' :
-                                   analysis.projectSignals.timeline.urgency === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                          [class]="analysis()!.projectSignals.timeline.urgency === 'high' ? 'bg-red-100 text-red-800' :
+                                   analysis()!.projectSignals.timeline.urgency === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                                    'bg-green-100 text-green-800'">
-                      {{ analysis.projectSignals.timeline.urgency }}
+                      {{ analysis()!.projectSignals.timeline.urgency }}
                     </span>
                   </p>
                   <p class="text-sm">
                     <span class="font-medium">Duration:</span>
-                    <span class="text-gray-600 ml-2">{{ analysis.projectSignals.timeline.durationEstimate }}</span>
+                    <span class="text-gray-600 ml-2">{{ analysis()!.projectSignals.timeline.durationEstimate }}</span>
                   </p>
-                  @if (analysis.projectSignals.timeline.keyDates.length > 0) {
+                  @if (analysis()!.projectSignals.timeline.keyDates.length > 0) {
                     <div>
                       <span class="font-medium text-sm">Key Dates:</span>
                       <ul class="mt-1 space-y-1">
-                        @for (date of analysis.projectSignals.timeline.keyDates; track date) {
+                        @for (date of analysis()!.projectSignals.timeline.keyDates; track date) {
                           <li class="text-sm text-gray-600 ml-4">• {{ date }}</li>
                         }
                       </ul>
@@ -217,13 +219,13 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                 <div class="space-y-2">
                   <p class="text-sm">
                     <span class="font-medium">Range:</span>
-                    <span class="text-gray-600 ml-2">{{ analysis.projectSignals.budget.rangeEstimate }}</span>
+                    <span class="text-gray-600 ml-2">{{ analysis()!.projectSignals.budget.rangeEstimate }}</span>
                   </p>
                   <p class="text-sm">
                     <span class="font-medium">Price Sensitivity:</span>
                     <span class="ml-2 px-2 py-1 rounded text-xs font-semibold capitalize"
-                          [class]="analysis.projectSignals.budget.pricingSensitivity === 'high' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'">
-                      {{ analysis.projectSignals.budget.pricingSensitivity }}
+                          [class]="analysis()!.projectSignals.budget.pricingSensitivity === 'high' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'">
+                      {{ analysis()!.projectSignals.budget.pricingSensitivity }}
                     </span>
                   </p>
                 </div>
@@ -234,11 +236,11 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
             <div class="bg-white rounded-lg shadow-md p-6">
               <h2 class="text-xl font-bold text-gray-900 mb-4">⚠ Risk Assessment</h2>
 
-              @if (analysis.riskAssessment.redFlags.length > 0) {
+              @if (analysis()!.riskAssessment.redFlags.length > 0) {
                 <div class="mb-4">
                   <h3 class="font-semibold text-red-700 mb-2">Red Flags</h3>
                   <ul class="space-y-1">
-                    @for (flag of analysis.riskAssessment.redFlags; track flag) {
+                    @for (flag of analysis()!.riskAssessment.redFlags; track flag) {
                       <li class="text-sm text-gray-600 flex items-start">
                         <span class="text-red-600 mr-2">🚩</span>
                         <span>{{ flag }}</span>
@@ -248,11 +250,11 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                 </div>
               }
 
-              @if (analysis.riskAssessment.clarificationNeeded.length > 0) {
+              @if (analysis()!.riskAssessment.clarificationNeeded.length > 0) {
                 <div class="mb-4">
                   <h3 class="font-semibold text-gray-700 mb-2">Questions to Ask</h3>
                   <ul class="space-y-1">
-                    @for (question of analysis.riskAssessment.clarificationNeeded; track question) {
+                    @for (question of analysis()!.riskAssessment.clarificationNeeded; track question) {
                       <li class="text-sm text-gray-600 flex items-start">
                         <span class="text-blue-600 mr-2">?</span>
                         <span>{{ question }}</span>
@@ -262,11 +264,11 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                 </div>
               }
 
-              @if (analysis.riskAssessment.scopeCreepRisks.length > 0) {
+              @if (analysis()!.riskAssessment.scopeCreepRisks.length > 0) {
                 <div>
                   <h3 class="font-semibold text-gray-700 mb-2">Scope Creep Risks</h3>
                   <ul class="space-y-1">
-                    @for (risk of analysis.riskAssessment.scopeCreepRisks; track risk) {
+                    @for (risk of analysis()!.riskAssessment.scopeCreepRisks; track risk) {
                       <li class="text-sm text-gray-600 flex items-start">
                         <span class="text-yellow-600 mr-2">⚡</span>
                         <span>{{ risk }}</span>
@@ -287,13 +289,13 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
                 <p class="text-sm mb-4">
                   <span class="font-medium">Proposal Tone:</span>
                   <span class="ml-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 capitalize">
-                    {{ analysis.recommendedApproach.proposalTone }}
+                    {{ analysis()!.recommendedApproach.proposalTone }}
                   </span>
                 </p>
                 <p class="text-sm">
                   <span class="font-medium">Pricing Strategy:</span>
                   <span class="ml-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 capitalize">
-                    {{ analysis.recommendedApproach.pricingStrategy.replace('_', ' ') }}
+                    {{ analysis()!.recommendedApproach.pricingStrategy.replace('_', ' ') }}
                   </span>
                 </p>
               </div>
@@ -301,7 +303,7 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               <div>
                 <h3 class="font-semibold text-gray-700 mb-2">Key Themes to Emphasize</h3>
                 <div class="flex flex-wrap gap-2">
-                  @for (theme of analysis.recommendedApproach.keyThemes; track theme) {
+                  @for (theme of analysis()!.recommendedApproach.keyThemes; track theme) {
                     <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
                       {{ theme }}
                     </span>
@@ -310,11 +312,11 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
               </div>
             </div>
 
-            @if (analysis.recommendedApproach.differentiators.length > 0) {
+            @if (analysis()!.recommendedApproach.differentiators.length > 0) {
               <div class="mt-4">
                 <h3 class="font-semibold text-gray-700 mb-2">How to Stand Out</h3>
                 <ul class="space-y-1">
-                  @for (diff of analysis.recommendedApproach.differentiators; track diff) {
+                  @for (diff of analysis()!.recommendedApproach.differentiators; track diff) {
                     <li class="text-sm text-gray-600 flex items-start">
                       <span class="text-green-600 mr-2">★</span>
                       <span>{{ diff }}</span>
@@ -335,10 +337,10 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
             </button>
             <button
               (click)="generateProposal()"
-              [disabled]="generating"
+              [disabled]="generating()"
               class="flex-1 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              @if (generating) {
+              @if (generating()) {
                 <span class="flex items-center justify-center">
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -357,17 +359,22 @@ import { Brief, BriefAnalysisResult } from '../../../core/models/brief.model';
   `
 })
 export class BriefAnalysisResultComponent implements OnInit {
-  brief: Brief | null = null;
-  analysis: BriefAnalysisResult | null = null;
-  loading = true;
-  error = '';
-  generating = false;
+  brief = signal<Brief | null>(null);
+  analysis = signal<BriefAnalysisResult | null>(null);
+  loading = signal(true);
+  error = signal('');
+  generating = signal(false);
+  selectedTemplateId = signal<string | null>(null);
+  selectedTemplateName = signal<string | null>(null);
+  availableTemplates = signal<TemplateListItem[]>([]);
+  loadingTemplates = signal(false);
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private briefService: BriefService,
-    private proposalService: ProposalService
+    private proposalService: ProposalService,
+    private templateService: TemplateService
   ) {}
 
   ngOnInit(): void {
@@ -375,52 +382,100 @@ export class BriefAnalysisResultComponent implements OnInit {
     if (briefId) {
       this.loadBrief(briefId);
     }
+
+    // Load template from localStorage if it exists
+    const templateId = localStorage.getItem('selectedTemplateId');
+    const templateName = localStorage.getItem('selectedTemplateName');
+    if (templateId && templateName) {
+      this.selectedTemplateId.set(templateId);
+      this.selectedTemplateName.set(templateName);
+    }
+
+    // Load available templates for selection
+    this.loadTemplates();
   }
 
   loadBrief(id: string): void {
     this.briefService.getBrief(id).subscribe({
       next: (brief) => {
-        this.brief = brief;
+        this.brief.set(brief);
         if (brief.analyzedContent) {
           try {
-            this.analysis = JSON.parse(brief.analyzedContent);
+            this.analysis.set(JSON.parse(brief.analyzedContent));
           } catch (e) {
-            this.error = 'Error parsing analysis results';
+            this.error.set('Error parsing analysis results');
           }
         }
-        this.loading = false;
+        this.loading.set(false);
       },
       error: (err) => {
-        this.error = err.error?.message || 'Error loading brief';
-        this.loading = false;
+        this.error.set(err.error?.message || 'Error loading brief');
+        this.loading.set(false);
       }
     });
   }
 
+  loadTemplates(): void {
+    this.loadingTemplates.set(true);
+    this.templateService.getTemplates({}).subscribe({
+      next: (templates) => {
+        this.availableTemplates.set(templates);
+        this.loadingTemplates.set(false);
+      },
+      error: () => {
+        this.loadingTemplates.set(false);
+      }
+    });
+  }
+
+  selectTemplate(templateId: string): void {
+    const template = this.availableTemplates().find(t => t.id === templateId);
+    if (template) {
+      this.selectedTemplateId.set(templateId);
+      this.selectedTemplateName.set(template.name);
+      localStorage.setItem('selectedTemplateId', templateId);
+      localStorage.setItem('selectedTemplateName', template.name);
+    }
+  }
+
+  removeTemplate(): void {
+    this.selectedTemplateId.set(null);
+    this.selectedTemplateName.set(null);
+    localStorage.removeItem('selectedTemplateId');
+    localStorage.removeItem('selectedTemplateName');
+  }
+
   generateProposal(): void {
-    if (!this.brief) return;
+    const brief = this.brief();
+    if (!brief) return;
 
     // TODO: Add proper client selection UI
     // For now, using a placeholder client ID - this should be selected by the user
     const placeholderClientId = '00000000-0000-0000-0000-000000000001';
 
-    this.generating = true;
-    this.error = '';
+    this.generating.set(true);
+    this.error.set('');
+
+    const analysisData = this.analysis();
 
     this.proposalService.generateProposal({
-      briefId: this.brief.id,
+      briefId: brief.id,
       clientId: placeholderClientId,
-      preferredTone: this.analysis?.recommendedApproach.proposalTone
+      preferredTone: analysisData?.recommendedApproach.proposalTone,
+      templateId: this.selectedTemplateId() || undefined
     }).subscribe({
       next: (result) => {
-        this.generating = false;
+        this.generating.set(false);
+        // Clear template selection after use
+        localStorage.removeItem('selectedTemplateId');
+        localStorage.removeItem('selectedTemplateName');
         // Navigate to the proposal view
         this.router.navigate(['/proposals', result.proposalId]);
       },
       error: (err) => {
-        this.generating = false;
-        this.error = err.error?.message || 'Error generating proposal. Please try again.';
-        alert(this.error);
+        this.generating.set(false);
+        this.error.set(err.error?.message || 'Error generating proposal. Please try again.');
+        alert(this.error());
       }
     });
   }

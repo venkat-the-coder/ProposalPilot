@@ -64,6 +64,27 @@ public class GenerateProposalCommandHandler : IRequestHandler<GenerateProposalCo
             throw new InvalidOperationException($"Client with ID {request.ClientId} not found");
         }
 
+        // Get the template if specified
+        ProposalTemplate? template = null;
+        if (request.TemplateId.HasValue)
+        {
+            template = await _context.ProposalTemplates
+                .FirstOrDefaultAsync(t => t.Id == request.TemplateId.Value &&
+                                         (t.UserId == request.UserId || t.IsPublic),
+                                     cancellationToken);
+
+            if (template == null)
+            {
+                _logger.LogWarning("Template {TemplateId} not found or not accessible for user {UserId}",
+                    request.TemplateId, request.UserId);
+                // Continue without template instead of failing
+            }
+            else
+            {
+                _logger.LogInformation("Using template {TemplateName} for proposal generation", template.Name);
+            }
+        }
+
         try
         {
             _logger.LogInformation("Generating proposal for brief {BriefId}", brief.Id);
@@ -87,6 +108,7 @@ public class GenerateProposalCommandHandler : IRequestHandler<GenerateProposalCo
                 100m, // Default hourly rate - this should come from user profile in the future
                 request.PreferredTone ?? briefAnalysis.RecommendedApproach.ProposalTone,
                 request.ProposalLength,
+                template,
                 cancellationToken
             );
 

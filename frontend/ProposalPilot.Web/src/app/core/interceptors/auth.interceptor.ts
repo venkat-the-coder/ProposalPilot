@@ -19,14 +19,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
+      if (error.status === 401 && !req.url.includes('/auth/logout')) {
         // Unauthorized - clear auth data and redirect to login
-        authService.logout().subscribe({
-          complete: () => {
-            router.navigate(['/auth/login'], {
-              queryParams: { returnUrl: router.url }
-            });
-          }
+        // Don't call logout() if this IS the logout request to avoid infinite loop
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        router.navigate(['/auth/login'], {
+          queryParams: { returnUrl: router.url }
         });
       }
       return throwError(() => error);

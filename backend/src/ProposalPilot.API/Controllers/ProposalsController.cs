@@ -59,7 +59,8 @@ public class ProposalsController : ControllerBase
                 request.BriefId,
                 request.ClientId,
                 request.PreferredTone,
-                request.ProposalLength
+                request.ProposalLength,
+                request.TemplateId
             );
 
             var proposalId = await _mediator.Send(command);

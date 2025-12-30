@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using ProposalPilot.Application.Interfaces;
+using ProposalPilot.Domain.Entities;
 using ProposalPilot.Shared.DTOs.Brief;
 using ProposalPilot.Shared.DTOs.Proposal;
 
@@ -135,6 +136,7 @@ IMPORTANT:
         decimal? hourlyRate = null,
         string? preferredTone = null,
         string? proposalLength = null,
+        ProposalTemplate? template = null,
         CancellationToken cancellationToken = default)
     {
         try
@@ -147,6 +149,21 @@ IMPORTANT:
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
             });
+
+            // Build template section if provided
+            var templateSection = template != null ? $@"
+
+TEMPLATE TO FOLLOW:
+Use this template as a structural guide for the proposal. Adapt the content to match the specific brief while maintaining the template's structure and tone:
+- Name: {template.Name}
+- Description: {template.Description}
+- Category: {template.Category}
+- Tags: {string.Join(", ", template.Tags ?? "General")}
+
+TEMPLATE CONTENT:
+{template.Content}
+
+Note: Use the template's structure and style as inspiration, but customize all content to address the specific brief requirements and client needs." : "";
 
             // Build user message
             var userMessage = $@"Generate a proposal based on:
@@ -164,7 +181,7 @@ USER PROFILE:
 CUSTOMIZATION:
 - Preferred Tone: {preferredTone ?? "professional"}
 - Proposal Length: {proposalLength ?? "medium"}
-- Emphasis: Focus on {string.Join(", ", briefAnalysis.RecommendedApproach.KeyThemes.Take(3))}";
+- Emphasis: Focus on {string.Join(", ", briefAnalysis.RecommendedApproach.KeyThemes.Take(3))}{templateSection}";
 
             // Call Claude API with Sonnet for better creative writing
             var response = await _claudeApiService.SendMessageAsync(

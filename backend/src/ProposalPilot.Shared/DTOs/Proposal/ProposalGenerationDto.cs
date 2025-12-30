@@ -44,7 +44,8 @@ public record GenerateProposalRequest(
     Guid ClientId,
     string? PreferredTone = null,
     string? ProposalLength = null,
-    string? Emphasis = null
+    string? Emphasis = null,
+    Guid? TemplateId = null
 );
 
 public record UpdateProposalRequest(
