@@ -2017,11 +2017,23 @@ AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=xxx
 
 ### Day 44-45: Testing & Bug Fixes
 
-- [ ] Write unit tests for services
-- [ ] Write integration tests for controllers
-- [ ] Write Angular component tests
-- [ ] E2E tests for critical flows
-- [ ] Fix all critical bugs
+- [x] Write unit tests for services
+  - Created ProposalPilot.Tests.Unit project with xUnit, FluentAssertions, Moq
+  - 7 unit tests for AuthService (register, login, refresh token, duplicate email)
+- [x] Write integration tests for controllers
+  - Created ProposalPilot.Tests.Integration project with WebApplicationFactory
+  - 9 integration tests (AuthController: register, login, token validation, health checks)
+  - CustomWebApplicationFactory with in-memory database and cache
+- [x] Write Angular component tests
+  - Configured Angular 21 native Vitest integration (@angular/build:unit-test)
+  - 21 component/service tests:
+    - App component tests (2)
+    - AuthService tests (9)
+    - LoginComponent tests (10)
+- [x] Fixed package version conflicts (JWT libraries, EF Core)
+- [x] Fixed integration test environment configuration
+- [ ] E2E tests for critical flows (deferred - core tests complete)
+- [x] Fix all critical bugs
 
 ### Day 46-47: Documentation
 

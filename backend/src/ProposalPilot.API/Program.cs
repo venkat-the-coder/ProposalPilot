@@ -138,10 +138,18 @@ try
     // Swagger
     builder.Services.AddSwaggerGen();
 
-    // Health Checks
-    builder.Services.AddHealthChecks()
-        .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "database")
-        .AddRedis(builder.Configuration.GetConnectionString("Redis")!, name: "redis");
+    // Health Checks (skip external checks in Testing environment)
+    var isTesting = builder.Environment.EnvironmentName == "Testing";
+    if (!isTesting)
+    {
+        builder.Services.AddHealthChecks()
+            .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!, name: "database")
+            .AddRedis(builder.Configuration.GetConnectionString("Redis")!, name: "redis");
+    }
+    else
+    {
+        builder.Services.AddHealthChecks();
+    }
 
     // Rate Limiting
     builder.Services.AddMemoryCache();
@@ -156,13 +164,16 @@ try
     builder.Services.AddValidatorsFromAssemblyContaining<ProposalPilot.Application.Validators.RegisterRequestValidator>();
     builder.Services.AddFluentValidationAutoValidation();
 
-    // Hangfire for background jobs
-    builder.Services.AddHangfire(config => config
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
-    builder.Services.AddHangfireServer();
+    // Hangfire for background jobs (skip in Testing environment)
+    if (!isTesting)
+    {
+        builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddHangfireServer();
+    }
 
     // Follow-up Service
     builder.Services.AddScoped<ProposalPilot.Infrastructure.Services.IFollowUpService, ProposalPilot.Infrastructure.Services.FollowUpService>();
@@ -201,21 +212,23 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
 
-    // Hangfire Dashboard (requires authorization in production)
-    app.MapHangfireDashboard("/hangfire", new DashboardOptions
+    // Hangfire Dashboard and recurring jobs (skip in Testing environment)
+    if (app.Environment.EnvironmentName != "Testing")
     {
-        Authorization = app.Environment.IsDevelopment()
-            ? new[] { new Hangfire.Dashboard.LocalRequestsOnlyAuthorizationFilter() }
-            : new[] { new HangfireAuthorizationFilter() }
-    });
+        app.MapHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = app.Environment.IsDevelopment()
+                ? new[] { new Hangfire.Dashboard.LocalRequestsOnlyAuthorizationFilter() }
+                : new[] { new HangfireAuthorizationFilter() }
+        });
 
-    // Register recurring jobs
-    RecurringJob.AddOrUpdate<ProposalPilot.Infrastructure.Services.IFollowUpService>(
-        "process-automatic-followups",
-        service => service.ProcessAutomaticFollowUpsAsync(),
-        Cron.Daily(9)); // Run daily at 9 AM UTC
+        RecurringJob.AddOrUpdate<ProposalPilot.Infrastructure.Services.IFollowUpService>(
+            "process-automatic-followups",
+            service => service.ProcessAutomaticFollowUpsAsync(),
+            Cron.Daily(9)); // Run daily at 9 AM UTC
 
-    Log.Information("Hangfire recurring jobs configured");
+        Log.Information("Hangfire recurring jobs configured");
+    }
 
     // Database migration on startup (only in development)
     if (app.Environment.IsDevelopment())
@@ -236,3 +249,6 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+// Partial class for integration testing
+public partial class Program { }
